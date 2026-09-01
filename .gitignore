@@ -1,13 +1,8 @@
-# Python
-.venv
+.env
+.venv/
 __pycache__/
 *.pyc
-
-# Secrets
-.env
-
-# macOS
+wowder.db
 .DS_Store
-
-# VS Code
-.vscode/settings.json
+.vscode/
+.idea/
