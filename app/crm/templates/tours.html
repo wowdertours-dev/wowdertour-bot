@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Туры — WowderTour CRM</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/crm_media.css">
+    <link rel="stylesheet" href="/static/tours_catalog.css">
+    <script defer src="/static/crm_media.js"></script>
+</head>
+<body>
+
+<main class="container tours-catalog">
+
+    <div class="catalog-heading">
+        <div>
+            <h1>Туры</h1>
+            <p>Категории и направления. Нажми на направление, чтобы открыть поездки по датам.</p>
+        </div>
+
+        <div class="catalog-actions">
+            <details class="catalog-action-details">
+                <summary class="secondary-button">📸 Общие фото</summary>
+                <div class="catalog-popover catalog-media-popover">
+                    <h3>Общие фото WowderTour</h3>
+
+                    <form method="post" action="/about/media/add" enctype="multipart/form-data" class="media-upload-form">
+                        <div class="form-field">
+                            <label>Добавить фото</label>
+                            <input type="file" name="photos" accept="image/*" multiple required>
+                        </div>
+                        <button type="submit" class="primary-button">Загрузить фото</button>
+                    </form>
+
+                    <div class="media-grid">
+                        {% for media in about_media %}
+                        <div class="media-card {% if not media.active %}inactive{% endif %}">
+                            {% if media.url %}
+                            <img src="{{ media.url }}" alt="{{ media.title or 'Фото WowderTour' }}" class="media-preview">
+                            {% endif %}
+
+                            <div class="media-name">{{ media.title or 'Фото' }}</div>
+
+                            <div class="media-actions">
+                                <form method="post" action="/media/{{ media.id }}/toggle">
+                                    <button type="submit" class="secondary-button">
+                                        {% if media.active %}Скрыть{% else %}Показать{% endif %}
+                                    </button>
+                                </form>
+
+                                <form method="post" action="/media/{{ media.id }}/delete" onsubmit="return confirm('Удалить это фото?');">
+                                    <button type="submit" class="danger-button">Удалить</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </details>
+
+            <details class="catalog-action-details">
+                <summary class="secondary-button">+ Категория</summary>
+
+                <div class="catalog-popover">
+                    <form method="post" action="/tour-categories/add" class="catalog-simple-form">
+                        <div class="form-field">
+                            <label>Название</label>
+                            <input type="text" name="title" placeholder="Например: Сап-туры" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Эмодзи</label>
+                            <input type="text" name="emoji" placeholder="🏄">
+                        </div>
+
+                        <button type="submit" class="primary-button">Создать категорию</button>
+                    </form>
+                </div>
+            </details>
+
+            <details class="catalog-action-details">
+                <summary class="primary-button">+ Направление</summary>
+
+                <div class="catalog-popover catalog-direction-create">
+                    <form method="post" action="/tours/add" class="catalog-direction-form">
+
+                        <div class="form-field">
+                            <label>Категория</label>
+                            <select name="category_id" required>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">
+                                    {% if category.emoji %}{{ category.emoji }}{% endif %}
+                                    {{ category.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Название</label>
+                            <input type="text" name="title" placeholder="Например: Архыз" required>
+                        </div>
+
+                        <div class="form-field catalog-wide">
+                            <label>Описание</label>
+                            <input type="text" name="description" placeholder="Короткое описание">
+                        </div>
+
+                        <input type="hidden" name="accommodation_description" value="">
+                        <input type="hidden" name="includes" value="">
+                        <input type="hidden" name="program" value="">
+
+                        <button type="submit" class="primary-button catalog-wide">Создать направление</button>
+                    </form>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <div class="catalog-categories">
+
+        {% for category in categories %}
+
+        <section class="catalog-category">
+            <div class="catalog-category-head">
+                <div>
+                    <h2>
+                        {% if category.emoji %}{{ category.emoji }}{% endif %}
+                        {{ category.title }}
+                    </h2>
+
+                    <span>
+                        {{ category.tours|length }}
+                        {% if category.tours|length == 1 %}
+                            направление
+                        {% elif category.tours|length in [2,3,4] %}
+                            направления
+                        {% else %}
+                            направлений
+                        {% endif %}
+                    </span>
+                </div>
+
+                <details class="category-menu">
+                    <summary title="Настройки категории">⚙️</summary>
+
+                    <div class="category-menu-panel">
+                        <form method="post" action="/tour-categories/{{ category.id }}/update" class="catalog-simple-form">
+                            <div class="form-field">
+                                <label>Название</label>
+                                <input type="text" name="title" value="{{ category.title }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label>Эмодзи</label>
+                                <input type="text" name="emoji" value="{{ category.emoji or '' }}">
+                            </div>
+
+                            <label class="checkbox-row">
+                                <input type="checkbox" name="active" value="1" {% if category.active %}checked{% endif %}>
+                                <span>Показывать категорию</span>
+                            </label>
+
+                            <button type="submit" class="save-button">Сохранить</button>
+                        </form>
+                    </div>
+                </details>
+            </div>
+
+            {% if category.tours %}
+
+            <div class="catalog-directions">
+                {% for tour in category.tours %}
+
+                <a class="catalog-direction-card" href="/tours/{{ tour.id }}/manage">
+                    <div>
+                        <div class="catalog-direction-title">{{ tour.title }}</div>
+
+                        <div class="catalog-direction-meta">
+                            {% if tour.departures %}
+                                {{ tour.departures|length }}
+                                {% if tour.departures|length == 1 %}
+                                    поездка
+                                {% elif tour.departures|length in [2,3,4] %}
+                                    поездки
+                                {% else %}
+                                    поездок
+                                {% endif %}
+                                · ближайшая {{ tour.departures[0].start_date.strftime("%d.%m.%Y") }}
+                            {% else %}
+                                Дат пока нет
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="catalog-direction-right">
+                        {% if tour.active %}
+                        <span class="catalog-status active">Активно</span>
+                        {% else %}
+                        <span class="catalog-status">Скрыто</span>
+                        {% endif %}
+
+                        <span class="catalog-open-arrow">→</span>
+                    </div>
+                </a>
+
+                {% endfor %}
+            </div>
+
+            {% else %}
+
+            <div class="catalog-empty">
+                В этой категории пока нет направлений.
+            </div>
+
+            {% endif %}
+        </section>
+
+        {% endfor %}
+
+    </div>
+
+</main>
+
+</body>
+</html>

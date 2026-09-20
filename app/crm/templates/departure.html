@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ departure.tour.title }} — WowderTour CRM
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+
+<style>
+    .rates-toolbar {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .rates-toolbar .form-field {
+        flex: 1 1 220px;
+    }
+
+    .rates-toolbar .beds-field {
+        flex: 0 0 190px;
+    }
+
+    .dynamic-rates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+    }
+
+    .dynamic-rate-card {
+        padding: 18px;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+    }
+
+    .dynamic-rate-card.inactive {
+        opacity: 0.62;
+    }
+
+    .rate-card-status {
+        display: inline-block;
+        margin-bottom: 12px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eef7ee;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .dynamic-rate-card.inactive .rate-card-status {
+        background: #f1f1f1;
+    }
+
+    .rate-edit-grid {
+        display: grid;
+        grid-template-columns: minmax(150px, 1fr) minmax(130px, 0.7fr) 120px;
+        gap: 10px;
+        align-items: end;
+    }
+
+    .rate-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    .rate-actions form {
+        margin: 0;
+    }
+
+    .rate-mini-button {
+        min-height: 38px;
+        padding: 0 13px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .rate-mini-button.danger {
+        color: #b42318;
+    }
+
+    .rates-empty {
+        margin-top: 18px;
+    }
+
+    @media (max-width: 760px) {
+        .rate-edit-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rates-toolbar .beds-field {
+            flex: 1 1 220px;
+        }
+    }
+
+    .room-person-manage {
+        border-radius: 12px;
+    }
+
+    .room-person-manage summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .room-person-manage summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .room-person-manage[open] {
+        background: #f7f7f7;
+    }
+
+    .room-person-manage[open] summary {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .room-person-actions {
+        padding: 10px 12px 12px;
+    }
+
+    .room-replace-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .room-person-actions select {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        min-height: 38px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    .room-action-button {
+        flex: 0 0 auto;
+        min-height: 38px;
+        padding: 0 11px;
+        border: 1px solid #d9d9d9;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .room-remove-form {
+        margin-top: 8px;
+    }
+
+    .room-action-button.danger {
+        width: 100%;
+        color: #b42318;
+    }
+
+    .room-no-candidates {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .room-assign {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #ededed;
+    }
+
+    .room-assign-label {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .room-assign-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+
+    .room-assign-form select {
+        min-width: 0;
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+        .room-replace-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+    }
+
+.payments-panel {
+    margin-top: 22px;
+    padding: 18px;
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.payments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.payments-title {
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.payments-total {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.payment-add-form {
+    display: grid;
+    grid-template-columns: 150px 170px 150px minmax(180px, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 16px;
+}
+
+.payment-history {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.payment-row {
+    display: grid;
+    grid-template-columns: 100px 130px 120px minmax(140px, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 12px;
+    background: white;
+    border: 1px solid #e7e7e7;
+    border-radius: 11px;
+    font-size: 13px;
+}
+
+.payment-row.cancelled {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+.payment-amount {
+    font-weight: 750;
+}
+
+.payment-method {
+    font-weight: 650;
+}
+
+.payment-comment {
+    color: var(--muted);
+}
+
+.payment-empty {
+    padding: 14px 0 2px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+@media (max-width: 980px) {
+    .payment-add-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .payment-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.unpaid-close-row {
+    margin-top: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border: 1px solid #e4e5e8;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.unpaid-close-row strong {
+    display: block;
+    font-size: 12px;
+}
+
+.unpaid-close-row span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.unpaid-close-row form {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+    .unpaid-close-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .unpaid-close-row button {
+        width: 100%;
+    }
+}
+
+
+.ticket-control {
+    margin: 14px 0 18px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.ticket-control-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.ticket-control-title {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.ticket-control-subtitle {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.ticket-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ticket-stat {
+    min-width: 105px;
+    padding: 9px 11px;
+    border: 1px solid #ececef;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.ticket-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.ticket-stat strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+}
+
+.ticket-alert {
+    margin-top: 12px;
+    border: 1px solid #ead9a0;
+    border-radius: 11px;
+    background: #fffaf0;
+    overflow: hidden;
+}
+
+.ticket-alert > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 11px 13px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ticket-alert > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ticket-missing-list {
+    padding: 0 13px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ticket-missing-booking {
+    padding: 9px 10px;
+    border-radius: 9px;
+    background: #fff;
+    border: 1px solid #eee3bf;
+}
+
+.ticket-missing-booking-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.ticket-missing-person {
+    margin-top: 5px;
+    color: #55585f;
+    font-size: 10px;
+}
+
+.ticket-filter-button {
+    border: 1px solid #dedee3;
+    border-radius: 9px;
+    background: #fff;
+    padding: 8px 11px;
+    font-size: 10px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.ticket-filter-button.active {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+}
+
+.departure-booking-row.ticket-needs-attention {
+    border-color: #ead9a0;
+    background: #fffdf7;
+}
+
+.departure-booking-row.ticket-none-bought {
+    border-color: #efcaca;
+    background: #fff9f9;
+}
+
+.ticket-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 7px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.ticket-badge.ok {
+    background: #eef8f0;
+    color: #28723a;
+}
+
+.ticket-badge.warn {
+    background: #fff4cf;
+    color: #7a5a00;
+}
+
+.ticket-badge.bad {
+    background: #fdeaea;
+    color: #a42c2c;
+}
+
+@media (max-width: 700px) {
+    .ticket-control-top {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ticket-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ticket-stat {
+        min-width: 0;
+    }
+}
+
+
+.departure-booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.departure-booking-row {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.45fr)
+        115px
+        115px
+        140px
+        26px;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    cursor: pointer;
+    transition:
+        border-color .16s ease,
+        box-shadow .16s ease,
+        transform .16s ease;
+}
+
+.departure-booking-row:hover {
+    border-color: #c7c9ce;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .045);
+    transform: translateY(-1px);
+}
+
+.departure-booking-name {
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.departure-booking-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.departure-booking-metric span {
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.departure-booking-metric strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+}
+
+.departure-booking-status {
+    display: inline-flex;
+    justify-content: center;
+    padding: 7px 9px;
+    border-radius: 999px;
+    background: #f2f2f2;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.departure-booking-arrow {
+    color: #8a8d93;
+    font-size: 16px;
+    text-align: right;
+}
+
+@media (max-width: 820px) {
+    .departure-booking-row {
+        grid-template-columns:
+            minmax(0, 1fr)
+            120px
+            24px;
+    }
+
+    .departure-booking-metric.optional {
+        display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .departure-booking-row {
+        grid-template-columns: 1fr 24px;
+    }
+
+    .departure-booking-status {
+        display: none;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div>
+        <div class="logo">
+            WOWDERTOUR
+        </div>
+
+        <div class="subtitle">
+            CRM
+        </div>
+    </div>
+
+    <a
+        href="/"
+        class="back-link"
+    >
+        ← Все туры
+    </a>
+
+</header>
+
+
+<main class="container">
+
+    <div class="departure-header">
+
+        <div>
+            <h1>
+                {{ departure.tour.title }}
+            </h1>
+
+            <p>
+                {{ departure.start_date.strftime("%d.%m.%Y") }}
+                —
+                {{ departure.end_date.strftime("%d.%m.%Y") }}
+            </p>
+        </div>
+
+        <div class="capacity">
+
+            <strong>
+                {{ people_count }}
+                /
+                {{ departure.capacity }}
+            </strong>
+
+            <span>
+                участников
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary">
+
+        <div class="summary-card">
+            <span>
+                Базовая цена
+            </span>
+
+            <strong>
+                {{ format_money(departure.price) }} ₽
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            <span>
+                Свободных мест в туре
+            </span>
+
+            <strong>
+                {{ free_places }}
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            <span>
+                Расселение
+            </span>
+
+            <strong>
+                {% if rooms %}
+                    {{ unsettled_people }} не расселено
+                {% else %}
+                    Не используется
+                {% endif %}
+            </strong>
+        </div>
+
+    </div>
+
+
+
+<!-- ПРОЖИВАНИЕ -->
+
+<div class="crm-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>
+                Тарифы проживания
+            </h2>
+
+            <p>
+                Добавляй столько вариантов, сколько нужно.
+                Если проживание для этого выезда не используется,
+                тарифы можно вообще не создавать.
+            </p>
+        </div>
+
+    </div>
+
+
+    <form
+        method="post"
+        action="/departures/{{ departure.id }}/accommodation-rates/add"
+        class="rates-toolbar"
+    >
+
+        <div class="form-field">
+            <label>
+                Название тарифа
+            </label>
+
+            <input
+                type="text"
+                name="title"
+                placeholder="Например: 2-местное"
+                maxlength="100"
+                required
+            >
+        </div>
+
+
+        <div class="form-field">
+            <label>
+                Стоимость на человека, ₽
+            </label>
+
+            <input
+                type="number"
+                name="price_per_person"
+                min="0"
+                step="1"
+                placeholder="46000"
+                required
+            >
+        </div>
+
+
+        <div class="form-field beds-field">
+            <label>
+                Занимает мест
+            </label>
+
+            <input
+                type="number"
+                name="occupied_beds"
+                min="1"
+                step="1"
+                value="1"
+                required
+            >
+        </div>
+
+
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            + Добавить тариф
+        </button>
+
+    </form>
+
+
+    {% set accommodation_rates = departure.accommodation_rates|sort(attribute="id") %}
+
+    {% if accommodation_rates %}
+
+    <div class="dynamic-rates-grid">
+
+        {% for rate in accommodation_rates %}
+
+        <div class="dynamic-rate-card {% if not rate.active %}inactive{% endif %}">
+
+            <div class="rate-card-status">
+                {% if rate.active %}
+                    Активен
+                {% else %}
+                    Скрыт
+                {% endif %}
+            </div>
+
+
+            <form
+                method="post"
+                action="/accommodation-rates/{{ rate.id }}/update"
+            >
+
+                <div class="rate-edit-grid">
+
+                    <div class="form-field">
+                        <label>
+                            Название
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            maxlength="100"
+                            value="{{ rate.title }}"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-field">
+                        <label>
+                            Цена на человека, ₽
+                        </label>
+
+                        <input
+                            type="number"
+                            name="price_per_person"
+                            min="0"
+                            step="1"
+                            value="{{ rate.price_per_person|int }}"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-field">
+                        <label>
+                            Занимает мест
+                        </label>
+
+                        <input
+                            type="number"
+                            name="occupied_beds"
+                            min="1"
+                            step="1"
+                            value="{{ rate.occupied_beds }}"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+
+                <div class="rate-actions">
+
+                    <button
+                        type="submit"
+                        class="rate-mini-button"
+                    >
+                        Сохранить
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div class="rate-actions">
+
+                <form
+                    method="post"
+                    action="/accommodation-rates/{{ rate.id }}/toggle"
+                >
+                    <button
+                        type="submit"
+                        class="rate-mini-button"
+                    >
+                        {% if rate.active %}
+                            Скрыть
+                        {% else %}
+                            Показать
+                        {% endif %}
+                    </button>
+                </form>
+
+
+                <form
+                    method="post"
+                    action="/accommodation-rates/{{ rate.id }}/delete"
+                    onsubmit="return confirm('Удалить тариф «{{ rate.title }}»?');"
+                >
+                    <button
+                        type="submit"
+                        class="rate-mini-button danger"
+                    >
+                        Удалить
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty accommodation-empty rates-empty">
+        Тарифы пока не добавлены
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+    <!-- КОМНАТЫ -->
+
+    <div class="crm-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>
+                    Комнаты
+                    <span style="font-size: 14px; font-weight: 500; color: var(--muted);">
+                        — необязательно
+                    </span>
+                </h2>
+
+                <p>
+                    {% if rooms %}
+                        {{ occupied_room_beds }}
+                        /
+                        {{ total_room_capacity }}
+                        физических мест занято
+                    {% else %}
+                        Добавляй комнаты только если хочешь вести расселение в CRM.
+                        Для тура без расселения этот блок можно не использовать.
+                    {% endif %}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="/departures/{{ departure.id }}/rooms/add"
+            class="room-create-form"
+        >
+
+            <div class="form-field">
+
+                <label>
+                    Номер комнаты
+                </label>
+
+                <input
+                    type="text"
+                    name="number"
+                    placeholder="204"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-field">
+
+                <label>
+                    Тип
+                </label>
+
+                <input
+                    type="text"
+                    name="room_type"
+                    placeholder="Например: 3-местная"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-field">
+
+                <label>
+                    Вместимость
+                </label>
+
+                <input
+                    type="number"
+                    name="capacity"
+                    min="1"
+                    step="1"
+                    placeholder="3"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-field room-notes-field">
+
+                <label>
+                    Комментарий
+                </label>
+
+                <input
+                    type="text"
+                    name="notes"
+                    placeholder="Например: второй этаж"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="save-button"
+            >
+                + Добавить комнату
+            </button>
+
+        </form>
+
+
+        {% if room_cards %}
+
+        <div class="rooms-grid">
+
+            {% for item in room_cards %}
+
+            {% set room = item.room %}
+
+            <div class="room-card">
+
+                <div class="room-card-header">
+
+                    <div>
+
+                        <div class="room-number">
+                            {{ room.number }}
+                        </div>
+
+                        <div class="room-meta">
+                            {{ room.room_type or "Тип не указан" }}
+                            ·
+                            {{ item.occupied_beds }}
+                            /
+                            {{ room.capacity or 0 }}
+                            мест
+                        </div>
+
+                    </div>
+
+
+                    {% if item.single_occupancy %}
+
+                    <span class="room-status single">
+                        Выкуплена целиком
+                    </span>
+
+                    {% elif item.is_full %}
+
+                    <span class="room-status full">
+                        Заполнена
+                    </span>
+
+                    {% else %}
+
+                    <span class="room-status free">
+                        {{ item.free_beds }} свободно
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="room-people">
+
+                    {% for participant in room.participants %}
+
+                    <details class="room-person-manage">
+
+                        <summary class="room-person">
+
+                            <strong>
+                                {{ participant.full_name }}
+                            </strong>
+
+                            <span>
+
+                                {{ participant.accommodation_type or "Без тарифа" }}
+
+                                {% if participant.occupied_beds > 1 %}
+
+                                    · блокирует
+                                    {{ participant.occupied_beds }}
+                                    места
+
+                                {% endif %}
+
+                                · нажми для управления
+
+                            </span>
+
+                        </summary>
+
+
+                        <div class="room-person-actions">
+
+                            {% set candidates = namespace(count=0) %}
+
+                            <form
+                                method="post"
+                                action="/participants/{{ participant.id }}/room/replace"
+                                class="room-replace-form"
+                            >
+
+                                <select
+                                    name="replacement_participant_id"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Кем заменить
+                                    </option>
+
+                                    {% for booking in departure.bookings %}
+
+                                        {% if booking.status not in ["Отмена", "Не актуальна"] %}
+
+                                            {% for candidate in booking.participants %}
+
+                                                {% if
+                                                    candidate.id != participant.id
+                                                    and candidate.room_id is none
+                                                    and candidate.accommodation_rate_id == participant.accommodation_rate_id
+                                                    and participant.accommodation_rate_id is not none
+                                                %}
+
+                                                    {% set candidates.count = candidates.count + 1 %}
+
+                                                    <option value="{{ candidate.id }}">
+                                                        {{ candidate.full_name }}
+                                                    </option>
+
+                                                {% endif %}
+
+                                            {% endfor %}
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <button
+                                    type="submit"
+                                    class="room-action-button"
+                                    {% if candidates.count == 0 %}
+                                    disabled
+                                    {% endif %}
+                                >
+                                    Заменить
+                                </button>
+
+                            </form>
+
+
+                            <form
+                                method="post"
+                                action="/participants/{{ participant.id }}/room/remove"
+                                class="room-remove-form"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="room-action-button danger"
+                                >
+                                    Выселить
+                                </button>
+
+                            </form>
+
+
+                            {% if candidates.count == 0 %}
+
+                            <div class="room-no-candidates">
+                                Нет нерасселённых участников
+                                с таким же типом размещения.
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </details>
+
+                    {% else %}
+
+                    <div class="room-empty">
+                        Пока никто не заселён
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+
+                {% if not item.is_full %}
+
+                {% set room_size = namespace(value="") %}
+                {% if room.room_type %}
+                    {% set room_size.value = room.room_type | replace(" ", "") %}
+                {% endif %}
+
+                {% set assign_candidates = namespace(count=0) %}
+
+                <div class="room-assign">
+
+                    <div class="room-assign-label">
+                        Заселить участника
+                    </div>
+
+                    <form
+                        method="post"
+                        action="/rooms/{{ room.id }}/participants/assign"
+                        class="room-assign-form"
+                    >
+
+                        <select
+                            name="participant_id"
+                            required
+                        >
+                            <option value="">
+                                Выбрать человека
+                            </option>
+
+                            {% for booking in departure.bookings %}
+
+                                {% if booking.status not in ["Отмена", "Не актуальна"] %}
+
+                                    {% for candidate in booking.participants %}
+
+                                        {% if
+                                            candidate.room_id is none
+                                            and candidate.accommodation_rate_id is not none
+                                        %}
+
+                                            {% set room_first = room.room_type[:1] if room.room_type else "" %}
+                                            {% set candidate_first = candidate.accommodation_type[:1] if candidate.accommodation_type else "" %}
+
+                                            {% if
+                                                not room_first.isdigit()
+                                                or (
+                                                    candidate_first.isdigit()
+                                                    and room_first == candidate_first
+                                                )
+                                            %}
+
+                                                {% set assign_candidates.count = assign_candidates.count + 1 %}
+
+                                                <option value="{{ candidate.id }}">
+                                                    {{ candidate.full_name }}
+                                                </option>
+
+                                            {% endif %}
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </select>
+
+                        <button
+                            type="submit"
+                            class="room-action-button"
+                            {% if assign_candidates.count == 0 %}
+                            disabled
+                            {% endif %}
+                        >
+                            Заселить
+                        </button>
+
+                    </form>
+
+                    {% if assign_candidates.count == 0 %}
+
+                    <div class="room-no-candidates">
+                        Нет подходящих нерасселённых участников.
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+                {% endif %}
+
+                {% if room.notes %}
+
+                <div class="room-note">
+                    {{ room.notes }}
+                </div>
+
+                {% endif %}
+
+
+                {% if not room.participants %}
+
+                <form
+                    method="post"
+                    action="/rooms/{{ room.id }}/delete"
+                >
+
+                    <button
+                        type="submit"
+                        class="danger-link"
+                    >
+                        Удалить комнату
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty accommodation-empty">
+            Расселение по комнатам не используется.
+            Это нормально — комнаты можно не добавлять.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ЗАЯВКИ -->
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Клиенты и участники
+            </h2>
+
+            <p>
+                Заявки, оплаты, размещение и билеты
+            </p>
+
+        </div>
+
+
+        <div class="section-actions">
+
+            <a
+                class="secondary-button"
+                href="/bookings?departure_id={{ departure.id }}"
+            >
+                📋 Все заявки
+            </a>
+
+            <a
+                class="secondary-button"
+                href="/departures/{{ departure.id }}/finance"
+            >
+                💰 Финансы
+            </a>
+
+            <a
+                class="secondary-button"
+                href="/departures/{{ departure.id }}/export.xlsx"
+            >
+                ⬇️ Excel
+            </a>
+
+            <a
+                class="primary-button"
+                href="/departures/{{ departure.id }}/add-client"
+            >
+                + Добавить клиента
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% set ticket_ns = namespace(total=0, bought=0, missing=0, affected_bookings=0) %}
+
+    {% for item in bookings_data %}
+        {% set booking = item.booking %}
+        {% if booking.status not in ["Отмена", "Не актуальна"] %}
+            {% set booking_ticket_ns = namespace(missing=0) %}
+
+            {% for participant in booking.participants %}
+                {% set ticket_ns.total = ticket_ns.total + 1 %}
+
+                {% if participant.ticket_status == "Куплен" %}
+                    {% set ticket_ns.bought = ticket_ns.bought + 1 %}
+                {% else %}
+                    {% set ticket_ns.missing = ticket_ns.missing + 1 %}
+                    {% set booking_ticket_ns.missing = booking_ticket_ns.missing + 1 %}
+                {% endif %}
+            {% endfor %}
+
+            {% if booking_ticket_ns.missing > 0 %}
+                {% set ticket_ns.affected_bookings = ticket_ns.affected_bookings + 1 %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+
+    <div class="ticket-control">
+
+        <div class="ticket-control-top">
+
+            <div>
+                <div class="ticket-control-title">
+                    🎫 Контроль билетов
+                </div>
+
+                <div class="ticket-control-subtitle">
+                    Учитываются активные заявки. Отменённые и неактуальные не входят в сводку.
+                </div>
+            </div>
+
+
+            <div class="ticket-stats">
+
+                <div class="ticket-stat">
+                    <span>Участников</span>
+                    <strong>{{ ticket_ns.total }}</strong>
+                </div>
+
+                <div class="ticket-stat">
+                    <span>Куплено</span>
+                    <strong>{{ ticket_ns.bought }}</strong>
+                </div>
+
+                <div class="ticket-stat">
+                    <span>Нужно купить</span>
+                    <strong>{{ ticket_ns.missing }}</strong>
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="ticket-filter-button"
+                class="ticket-filter-button"
+                onclick="toggleTicketFilter()"
+            >
+                🎫 Только без билетов
+            </button>
+
+        </div>
+
+
+        {% if ticket_ns.missing > 0 %}
+
+        <details class="ticket-alert">
+
+            <summary>
+                ⚠️ Требуют покупки:
+                {{ ticket_ns.missing }} чел.
+                в {{ ticket_ns.affected_bookings }} заявк.
+            </summary>
+
+
+            <div class="ticket-missing-list">
+
+                {% for item in bookings_data %}
+                    {% set booking = item.booking %}
+
+                    {% if booking.status not in ["Отмена", "Не актуальна"] %}
+                        {% set missing_people = booking.participants
+                            | rejectattr("ticket_status", "equalto", "Куплен")
+                            | list
+                        %}
+
+                        {% if missing_people %}
+
+                        <div class="ticket-missing-booking">
+
+                            <div class="ticket-missing-booking-head">
+                                <span>
+                                    {{ booking_public_number(booking.id) }}
+                                    ·
+                                    {{ booking.applicant_full_name or booking.customer.full_name }}
+                                </span>
+
+                                <a href="/bookings/{{ booking.id }}">
+                                    Открыть
+                                </a>
+                            </div>
+
+                            {% for participant in missing_people %}
+                            <div class="ticket-missing-person">
+                                ⏳ {{ participant.full_name }} — билет не куплен
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+
+        </details>
+
+        {% else %}
+
+        <div class="ticket-control-subtitle" style="margin-top:10px;">
+            ✅ По всем активным участникам билеты куплены.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="departure-booking-list">
+
+        {% for item in bookings_data %}
+
+        {% set booking = item.booking %}
+
+        {% set row_ticket_ns = namespace(total=0, bought=0, missing=0) %}
+
+        {% if booking.status not in ["Отмена", "Не актуальна"] %}
+            {% for participant in booking.participants %}
+                {% set row_ticket_ns.total = row_ticket_ns.total + 1 %}
+
+                {% if participant.ticket_status == "Куплен" %}
+                    {% set row_ticket_ns.bought = row_ticket_ns.bought + 1 %}
+                {% else %}
+                    {% set row_ticket_ns.missing = row_ticket_ns.missing + 1 %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div
+            class="departure-booking-row{% if row_ticket_ns.missing > 0 and row_ticket_ns.bought > 0 %} ticket-needs-attention{% endif %}{% if row_ticket_ns.missing > 0 and row_ticket_ns.bought == 0 %} ticket-none-bought{% endif %}"
+            data-ticket-missing="{% if row_ticket_ns.missing > 0 %}1{% else %}0{% endif %}"
+            data-href="/bookings/{{ booking.id }}"
+            onclick="window.location.href = this.dataset.href;"
+            role="link"
+            tabindex="0"
+            onkeydown="
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    window.location.href = this.dataset.href;
+                }
+            "
+        >
+
+            <div>
+                <div class="departure-booking-name">
+                    {{ booking.applicant_full_name or booking.customer.full_name }}
+                </div>
+
+                <div class="departure-booking-meta">
+                    {{ booking_public_number(booking.id) }}
+                    ·
+                    {{ booking.people_count }} чел.
+                    {% if booking.created_at %}
+                        · 🕒 {{ booking.created_at.strftime("%d.%m.%Y · %H:%M") }}
+                    {% endif %}
+                    {% if booking.applicant_phone or booking.customer.phone %}
+                        · {{ booking.applicant_phone or booking.customer.phone }}
+                    {% endif %}
+
+                    {% if booking.status not in ["Отмена", "Не актуальна"] and row_ticket_ns.total > 0 %}
+                        {% if row_ticket_ns.missing == 0 %}
+                        <span class="ticket-badge ok">
+                            ✅ Билеты {{ row_ticket_ns.bought }}/{{ row_ticket_ns.total }}
+                        </span>
+                        {% elif row_ticket_ns.bought == 0 %}
+                        <span class="ticket-badge bad">
+                            🔴 Билеты 0/{{ row_ticket_ns.total }}
+                        </span>
+                        {% else %}
+                        <span class="ticket-badge warn">
+                            ⚠️ Билеты {{ row_ticket_ns.bought }}/{{ row_ticket_ns.total }}
+                        </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <div class="departure-booking-metric optional">
+                <span>
+                    Стоимость
+                </span>
+
+                <strong>
+                    {{ format_money(booking.agreed_price) }} ₽
+                </strong>
+            </div>
+
+
+            <div class="departure-booking-metric optional">
+                <span>
+                    Внесено
+                </span>
+
+                <strong>
+                    {{ format_money(item.paid) }} ₽
+                </strong>
+            </div>
+
+
+            <div class="departure-booking-status">
+
+                {% if booking.status == "Новая" %}
+                    🆕 Новая
+                {% elif booking.status == "Связались" %}
+                    🟡 Связались
+                {% elif booking.status == "Предоплата" %}
+                    💸 Предоплата
+                {% elif booking.status == "Оплачено" %}
+                    💰 Оплачено
+                {% elif booking.status == "Не актуальна" %}
+                    ⚪ Не актуальна
+                {% elif booking.status == "Отмена" %}
+                    🔴 Отмена
+                {% else %}
+                    {{ booking.status }}
+                {% endif %}
+
+            </div>
+
+
+            <div class="departure-booking-arrow">
+                ›
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            На этот тур пока нет заявок
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</main>
+
+
+<script>
+    let ticketFilterEnabled = false;
+
+    function toggleTicketFilter() {
+        ticketFilterEnabled = !ticketFilterEnabled;
+
+        const button = document.getElementById("ticket-filter-button");
+        const rows = document.querySelectorAll(".departure-booking-row");
+
+        rows.forEach((row) => {
+            if (!ticketFilterEnabled) {
+                row.style.display = "";
+                return;
+            }
+
+            row.style.display =
+                row.dataset.ticketMissing === "1"
+                    ? ""
+                    : "none";
+        });
+
+        if (button) {
+            button.classList.toggle(
+                "active",
+                ticketFilterEnabled
+            );
+
+            button.textContent = ticketFilterEnabled
+                ? "✓ Показаны без билетов"
+                : "🎫 Только без билетов";
+        }
+    }
+</script>
+
+
+
+</body>
+</html>

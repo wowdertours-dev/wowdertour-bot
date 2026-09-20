@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — WowderTour CRM</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: #f5f5f6;
+            color: #161616;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .login-card {
+            width: min(100%, 420px);
+            padding: 34px;
+            background: #fff;
+            border: 1px solid #e5e5e7;
+            border-radius: 20px;
+            box-shadow: 0 18px 55px rgba(0,0,0,.08);
+        }
+        .brand { margin-bottom: 28px; }
+        .brand strong {
+            display: block;
+            font-size: 19px;
+            letter-spacing: .05em;
+        }
+        .brand span {
+            display: block;
+            margin-top: 3px;
+            color: #888;
+            font-size: 12px;
+            font-weight: 650;
+            letter-spacing: .12em;
+        }
+        h1 { margin: 0 0 8px; font-size: 26px; }
+        .hint { margin: 0 0 24px; color: #777; font-size: 14px; }
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            color: #444;
+            font-size: 13px;
+            font-weight: 650;
+        }
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px;
+            border: 1px solid #d8d8dc;
+            border-radius: 11px;
+            outline: none;
+            font: inherit;
+            background: #fff;
+        }
+        input:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+        button {
+            width: 100%;
+            height: 48px;
+            margin-top: 22px;
+            border: 0;
+            border-radius: 11px;
+            background: #111;
+            color: #fff;
+            font: inherit;
+            font-weight: 750;
+            cursor: pointer;
+        }
+        button:hover { background: #292929; }
+        .error {
+            margin: 18px 0 0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: #fff0f0;
+            color: #a42424;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+    </style>
+</head>
+<body>
+    <main class="login-card">
+        <div class="brand">
+            <strong>WOWDERTOUR</strong>
+            <span>CRM</span>
+        </div>
+        <h1>Вход в админку</h1>
+        <p class="hint">Введите данные администратора.</p>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if configured %}
+        <form method="post" action="/login" autocomplete="on">
+            <input type="hidden" name="next" value="{{ next }}">
+            <label for="username">Логин</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+            <label for="password">Пароль</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button type="submit">Войти</button>
+        </form>
+        {% endif %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        WowderTour CRM
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+</head>
+
+<body>
+
+<header class="header">
+
+    <div>
+        <div class="logo">
+            WOWDERTOUR
+        </div>
+
+        <div class="subtitle">
+            CRM
+        </div>
+    </div>
+
+
+    <a
+        href="/tours/manage"
+        class="secondary-button"
+    >
+        ⚙️ Управление турами
+    </a>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-title">
+
+        <h1>
+            Туры
+        </h1>
+
+        <p>
+            Заявки, участники и загрузка ближайших выездов
+        </p>
+
+    </div>
+
+
+    {% if cards %}
+
+    <div class="tour-grid">
+
+        {% for item in cards %}
+
+        {% set departure = item.departure %}
+
+
+        <a
+            href="/departures/{{ departure.id }}"
+            class="tour-card"
+        >
+
+            <div class="tour-card-top">
+
+                <div>
+
+                    <div class="tour-name">
+                        {{ departure.tour.title }}
+                    </div>
+
+                    <div class="tour-date">
+                        {{ departure.start_date.strftime("%d.%m.%Y") }}
+                        —
+                        {{ departure.end_date.strftime("%d.%m.%Y") }}
+                    </div>
+
+                </div>
+
+
+                {% if not departure.active %}
+
+                <span class="status closed">
+                    Скрыт
+                </span>
+
+                {% elif not departure.booking_open %}
+
+                <span class="status closed">
+                    Продажи закрыты
+                </span>
+
+                {% elif item.free_places <= 0 %}
+
+                <span class="status closed">
+                    Мест нет
+                </span>
+
+                {% else %}
+
+                <span class="status open">
+                    Продажи открыты
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>
+                        Участники
+                    </span>
+
+                    <strong>
+                        {{ item.people_count }}
+                        /
+                        {{ departure.capacity }}
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        Свободно
+                    </span>
+
+                    <strong>
+                        {{ item.free_places }}
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        Цена
+                    </span>
+
+                    <strong>
+                        {{ format_money(departure.price) }} ₽
+                    </strong>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span>
+                        Продано
+                    </span>
+
+                    <strong>
+                        {{ format_money(item.revenue) }} ₽
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="money-row">
+
+                <div>
+
+                    <span>
+                        Получено
+                    </span>
+
+                    <strong>
+                        {{ format_money(item.paid) }} ₽
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Осталось получить
+                    </span>
+
+                    <strong>
+                        {{ format_money(item.remaining) }} ₽
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% else %}
+
+    <div class="empty">
+        Выездов пока нет
+    </div>
+
+    {% endif %}
+
+</main>
+
+</body>
+
+</html>

@@ -1,0 +1,314 @@
+/* =========================================
+   WOWDERTOUR CRM — COMPACT TOURS MANAGEMENT
+========================================= */
+
+/* Верхние действия больше не выглядят как огромные панели */
+.container > .management-block {
+    display: inline-block;
+    vertical-align: top;
+
+    width: auto;
+    min-width: 0;
+
+    margin: 0 8px 22px 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+
+    overflow: visible;
+}
+
+.container > .management-block > .management-summary {
+    min-height: 42px;
+    padding: 0 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+
+    background: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    list-style: none;
+}
+
+.container > .management-block > .management-summary::-webkit-details-marker {
+    display: none;
+}
+
+.container > .management-block > .management-summary:hover {
+    background: #f7f7f8;
+}
+
+.container > .management-block[open] {
+    display: block;
+    width: 100%;
+}
+
+.container > .management-block[open] > .management-summary {
+    margin-bottom: 10px;
+}
+
+.container > .management-block > .management-content {
+    margin-top: 4px;
+    padding: 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: #fff;
+}
+
+
+/* Категория */
+.compact-category-card {
+    position: relative;
+
+    margin-top: 18px;
+    padding: 20px;
+
+    border-radius: 18px;
+}
+
+.compact-category-card > .tour-management-header {
+    min-height: 40px;
+    margin-bottom: 12px;
+    padding-right: 150px;
+}
+
+.compact-category-card > .tour-management-header .management-status {
+    position: absolute;
+    top: 20px;
+    right: 66px;
+}
+
+.category-settings-compact {
+    min-height: 0;
+}
+
+.category-settings-compact > summary {
+    position: absolute;
+    top: 17px;
+    right: 20px;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: #fff;
+
+    font-size: 17px;
+    line-height: 1;
+
+    cursor: pointer;
+    list-style: none;
+}
+
+.category-settings-compact > summary::-webkit-details-marker {
+    display: none;
+}
+
+.category-settings-compact > summary:hover {
+    background: #f4f4f5;
+}
+
+.category-settings-compact[open] > .category-settings-form,
+.category-settings-compact[open] > .category-danger-actions {
+    margin-top: 14px;
+}
+
+
+/* Направления — строки вместо вложенных больших блоков */
+.direction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.compact-direction-card {
+    position: relative;
+
+    padding: 16px 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: #fff;
+}
+
+.compact-direction-card > .tour-management-header {
+    min-height: 48px;
+    margin: 0;
+    padding-right: 118px;
+}
+
+.compact-direction-card .direction-title {
+    font-size: 18px;
+    font-weight: 760;
+}
+
+.direction-meta {
+    margin-top: 4px;
+
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.compact-direction-card > .tour-management-header .management-status {
+    margin-right: 4px;
+
+    font-size: 10px;
+}
+
+
+/* Кнопки ⚙️ и 📸 */
+.direction-settings-compact,
+.direction-photos-compact {
+    min-height: 0;
+}
+
+.direction-settings-compact > summary,
+.direction-photos-compact > summary {
+    position: absolute;
+    top: 16px;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: #fff;
+
+    font-size: 17px;
+    line-height: 1;
+
+    cursor: pointer;
+    list-style: none;
+}
+
+.direction-settings-compact > summary {
+    right: 62px;
+}
+
+.direction-photos-compact > summary {
+    right: 16px;
+}
+
+.direction-settings-compact > summary::-webkit-details-marker,
+.direction-photos-compact > summary::-webkit-details-marker {
+    display: none;
+}
+
+.direction-settings-compact > summary:hover,
+.direction-photos-compact > summary:hover {
+    background: #f4f4f5;
+}
+
+.direction-settings-compact[open] > .settings-inner,
+.direction-photos-compact[open] > .settings-inner {
+    margin-top: 16px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--border);
+}
+
+
+/* Сами даты компактнее */
+.departures-management {
+    margin-top: 12px;
+}
+
+.departure-management-row {
+    margin-top: 7px;
+
+    border-radius: 11px;
+}
+
+.departure-management-summary {
+    min-height: 50px;
+    padding: 11px 14px;
+}
+
+
+/* Фото категории, когда направлений нет */
+.compact-category-card > .media-management {
+    margin: 12px 0 16px;
+}
+
+
+/* Убираем старые стрелки сортировки фото.
+   Порядок фото меняется drag & drop. */
+.media-actions form[action$="/move"] {
+    display: none !important;
+}
+
+
+/* Мобильная версия */
+@media (max-width: 760px) {
+    .container > .management-block {
+        margin-bottom: 8px;
+    }
+
+    .compact-category-card {
+        padding: 16px 14px;
+    }
+
+    .compact-category-card > .tour-management-header {
+        padding-right: 48px;
+        padding-bottom: 34px;
+    }
+
+    .compact-category-card > .tour-management-header .management-status {
+        top: auto;
+        right: auto;
+        bottom: 10px;
+        left: 14px;
+    }
+
+    .category-settings-compact > summary {
+        top: 14px;
+        right: 14px;
+    }
+
+    .compact-direction-card {
+        padding: 14px;
+    }
+
+    .compact-direction-card > .tour-management-header {
+        padding-right: 96px;
+    }
+
+    .direction-settings-compact > summary {
+        top: 13px;
+        right: 56px;
+    }
+
+    .direction-photos-compact > summary {
+        top: 13px;
+        right: 12px;
+    }
+
+    .compact-direction-card > .tour-management-header .management-status {
+        display: none;
+    }
+}

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ departure.tour.title }} — Финансы — WowderTour CRM</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .finance-page-title {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 26px;
+        }
+
+        .finance-page-title h1 {
+            margin-bottom: 6px;
+            text-transform: none;
+        }
+
+        .finance-page-title p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .finance-toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finance-block {
+            margin-bottom: 18px;
+        }
+
+        .finance-block:last-of-type {
+            margin-bottom: 34px;
+        }
+
+        .finance-block-label {
+            margin: 0 0 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .finance-cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .finance-card {
+            min-height: 108px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .finance-card span {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .finance-card strong {
+            display: block;
+            font-size: 24px;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .finance-card small {
+            display: block;
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .finance-card.is-accent {
+            border-color: #d9e7ff;
+            background: #fbfdff;
+        }
+
+        .finance-card.is-profit {
+            border-color: #dceede;
+            background: #fcfffc;
+        }
+
+        .finance-card.is-soft {
+            background: #fbfbfc;
+        }
+
+        .finance-card.is-wide {
+            grid-column: span 2;
+        }
+
+        .finance-note {
+            margin: 0 0 26px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .finance-section {
+            margin-top: 34px;
+        }
+
+        .finance-expense-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .finance-expense-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: #fff;
+        }
+
+        .finance-expense-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .finance-expense-title {
+            font-size: 18px;
+            font-weight: 750;
+        }
+
+        .finance-expense-description {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .finance-expense-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .finance-expense-meta .info-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #f8f8f9;
+        }
+
+        @media (max-width: 1100px) {
+            .finance-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .finance-card.is-wide {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .finance-page-title {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .finance-cards,
+            .finance-expense-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .finance-card,
+            .finance-card.is-wide {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+
+    <div class="finance-page-title">
+        <div>
+            <h1>{{ departure.tour.title }} — финансы</h1>
+            <p>
+                {{ departure.start_date.strftime("%d.%m.%Y") }}
+                —
+                {{ departure.end_date.strftime("%d.%m.%Y") }}
+            </p>
+        </div>
+
+        <div class="finance-toolbar">
+            <a class="secondary-button" href="/departures/{{ departure.id }}">← К поездке</a>
+            <a class="secondary-button" href="/finance">← Все финансы</a>
+        </div>
+    </div>
+
+    <div class="finance-block">
+        <p class="finance-block-label">Продажи и оплаты</p>
+        <div class="finance-cards">
+            <div class="finance-card is-accent">
+                <span>Плановые продажи</span>
+                <strong>{{ format_money(planned_sales) }} ₽</strong>
+                <small>Все актуальные заявки по этой поездке</small>
+            </div>
+
+            <div class="finance-card is-accent">
+                <span>Фактические продажи</span>
+                <strong>{{ format_money(actual_sales) }} ₽</strong>
+                <small>Заявки со статусом предоплаты или полной оплаты</small>
+            </div>
+
+            <div class="finance-card is-accent">
+                <span>Поступило</span>
+                <strong>{{ format_money(gross_received) }} ₽</strong>
+                <small>Все входящие платежи без вычета возвратов</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="finance-block">
+        <p class="finance-block-label">Денежный поток</p>
+        <div class="finance-cards">
+            <div class="finance-card is-soft">
+                <span>Возвращено</span>
+                <strong>{{ format_money(refunded) }} ₽</strong>
+            </div>
+
+            <div class="finance-card is-soft">
+                <span>Чистыми получено</span>
+                <strong>{{ format_money(net_received) }} ₽</strong>
+                <small>Поступило минус возвраты</small>
+            </div>
+
+            <div class="finance-card is-soft">
+                <span>Осталось получить</span>
+                <strong>{{ format_money(remaining) }} ₽</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="finance-block">
+        <p class="finance-block-label">Экономика поездки</p>
+        <div class="finance-cards">
+            <div class="finance-card">
+                <span>Расходы</span>
+                <strong>{{ format_money(expenses_total) }} ₽</strong>
+            </div>
+
+            <div class="finance-card is-profit">
+                <span>Плановая прибыль</span>
+                <strong>{{ format_money(planned_profit) }} ₽</strong>
+            </div>
+
+            <div class="finance-card is-profit">
+                <span>Фактическая прибыль</span>
+                <strong>{{ format_money(actual_profit) }} ₽</strong>
+            </div>
+
+            <div class="finance-card">
+                <span>Участников с оплатой</span>
+                <strong>{{ people_count }}</strong>
+            </div>
+
+            <div class="finance-card is-wide">
+                <span>Фактическая прибыль на участника</span>
+                <strong>{{ format_money(profit_per_person) }} ₽</strong>
+                <small>Фактическая прибыль, разделённая на количество участников с оплатой</small>
+            </div>
+        </div>
+    </div>
+
+    <p class="finance-note">
+        Метрики сгруппированы: сверху продажи, ниже движение денег, затем итоговая экономика поездки.
+    </p>
+
+    <div class="crm-section finance-section">
+        <div class="section-header">
+            <div>
+                <h2>Добавить расход</h2>
+                <p>Например: жильё, трансфер, гиды, билеты, реклама</p>
+            </div>
+        </div>
+
+        <form method="post" action="/departures/{{ departure.id }}/expenses/add" class="client-form">
+            <div class="form-grid">
+                <div class="form-field">
+                    <label>Категория</label>
+                    <input type="text" name="category" placeholder="Например: Трансфер" required>
+                </div>
+
+                <div class="form-field">
+                    <label>Сумма, ₽</label>
+                    <input type="number" name="amount" min="0.01" step="0.01" placeholder="15000" required>
+                </div>
+
+                <div class="form-field">
+                    <label>Дата</label>
+                    <input type="date" name="expense_date">
+                </div>
+
+                <div class="form-field">
+                    <label>Комментарий</label>
+                    <input type="text" name="description" placeholder="Необязательно">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a class="secondary-button" href="/departures/{{ departure.id }}">← К поездке</a>
+                <button type="submit" class="primary-button">+ Добавить расход</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="crm-section finance-section">
+        <div class="section-header">
+            <div>
+                <h2>Расходы</h2>
+                <p>Всего: {{ format_money(expenses_total) }} ₽</p>
+            </div>
+        </div>
+
+        {% if expenses %}
+        <div class="finance-expense-list">
+            {% for expense in expenses %}
+            <div class="finance-expense-card">
+                <div class="finance-expense-head">
+                    <div>
+                        <div class="finance-expense-title">{{ expense.category }}</div>
+                        {% if expense.description %}
+                        <div class="finance-expense-description">{{ expense.description }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>{{ format_money(expense.amount) }} ₽</strong>
+                    </div>
+                </div>
+
+                <div class="finance-expense-meta">
+                    <div class="info-item">
+                        <span>Дата</span>
+                        <strong>
+                            {% if expense.expense_date %}
+                                {{ expense.expense_date.strftime("%d.%m.%Y") }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+
+                <form method="post" action="/expenses/{{ expense.id }}/delete" onsubmit="return confirm('Удалить расход «{{ expense.category }}»?');">
+                    <button type="submit" class="danger-link">Удалить расход</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">Расходов пока нет</div>
+        {% endif %}
+    </div>
+
+</main>
+</body>
+</html>

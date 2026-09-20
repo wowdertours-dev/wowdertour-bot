@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Добавить клиента — WowderTour CRM
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+
+    <style>
+        .auto-info {
+            padding: 14px 16px;
+            border: 1px solid #e7e7eb;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        .auto-info-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #77777f;
+            font-size: 12px;
+        }
+
+        .auto-info-value {
+            display: block;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .auto-info-hint {
+            display: block;
+            margin-top: 5px;
+            color: #888891;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div>
+        <div class="logo">WOWDERTOUR</div>
+        <div class="subtitle">CRM</div>
+    </div>
+
+    <a
+        href="/departures/{{ departure.id }}"
+        class="back-link"
+    >
+        ← Назад
+    </a>
+
+</header>
+
+
+<main class="container form-container">
+
+    <div class="page-title">
+
+        <h1>Добавить клиента</h1>
+
+        <p>
+            {{ departure.tour.title }}
+            ·
+            {{ departure.start_date.strftime("%d.%m.%Y") }}
+            —
+            {{ departure.end_date.strftime("%d.%m.%Y") }}
+        </p>
+
+    </div>
+
+
+    <form
+        method="post"
+        class="client-form"
+    >
+
+        <div class="form-grid">
+
+            <div class="form-field">
+                <label>Имя и фамилия *</label>
+
+                <input
+                    type="text"
+                    name="full_name"
+                    required
+                    placeholder="Иван Иванов"
+                >
+            </div>
+
+
+            <div class="form-field">
+                <label>Телефон</label>
+
+                <input
+                    type="text"
+                    name="phone"
+                    placeholder="+7 999 000-00-00"
+                >
+            </div>
+
+
+            <div class="form-field">
+                <label>Telegram</label>
+
+                <input
+                    type="text"
+                    name="telegram_username"
+                    placeholder="@username"
+                >
+            </div>
+
+
+            <div class="form-field">
+                <label>Количество человек</label>
+
+                <input
+                    id="people-count"
+                    type="number"
+                    name="people_count"
+                    value="1"
+                    min="1"
+                    max="{{ departure.capacity }}"
+                    required
+                >
+            </div>
+
+
+            <div class="auto-info">
+                <span class="auto-info-label">
+                    Стоимость заявки
+                </span>
+
+                <strong
+                    id="calculated-price"
+                    class="auto-info-value"
+                >
+                    {{ format_money(departure.price) }} ₽
+                </strong>
+
+                <small class="auto-info-hint">
+                    Рассчитывается автоматически:
+                    {{ format_money(departure.price) }} ₽ × количество человек
+                </small>
+            </div>
+
+
+            <div class="form-field">
+                <label>Уже внесено, ₽</label>
+
+                <input
+                    id="paid-amount"
+                    type="number"
+                    name="paid_amount"
+                    value="0"
+                    min="0"
+                    step="1"
+                >
+
+                <small id="status-hint">
+                    Статус будет выставлен автоматически: Новая
+                </small>
+            </div>
+
+
+            <div class="form-field full-width">
+                <label>Комментарий</label>
+
+                <textarea
+                    name="comment"
+                    rows="4"
+                    placeholder="Откуда пришёл клиент, пожелания и т.д."
+                ></textarea>
+            </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <a
+                class="secondary-button"
+                href="/departures/{{ departure.id }}"
+            >
+                Отмена
+            </a>
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Добавить клиента
+            </button>
+
+        </div>
+
+    </form>
+
+</main>
+
+<script>
+    const pricePerPerson = Number("{{ departure.price }}");
+    const peopleInput = document.getElementById("people-count");
+    const paidInput = document.getElementById("paid-amount");
+    const priceOutput = document.getElementById("calculated-price");
+    const statusHint = document.getElementById("status-hint");
+
+    function formatRub(value) {
+        return new Intl.NumberFormat("ru-RU", {
+            maximumFractionDigits: 0
+        }).format(value) + " ₽";
+    }
+
+    function updateAutoValues() {
+        const people = Math.max(
+            Number(peopleInput.value || 1),
+            1
+        );
+        const total = pricePerPerson * people;
+        const paid = Math.max(
+            Number(paidInput.value || 0),
+            0
+        );
+
+        priceOutput.textContent = formatRub(total);
+
+        let status = "Новая";
+
+        if (paid > 0 && paid < total) {
+            status = "Предоплата";
+        } else if (paid > 0 && paid >= total) {
+            status = "Оплачено";
+        }
+
+        statusHint.textContent =
+            "Статус будет выставлен автоматически: " + status;
+    }
+
+    peopleInput.addEventListener("input", updateAutoValues);
+    paidInput.addEventListener("input", updateAutoValues);
+
+    updateAutoValues();
+</script>
+
+</body>
+</html>

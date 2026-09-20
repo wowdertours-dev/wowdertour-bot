@@ -1,0 +1,338 @@
+/* WOWDERTOUR CRM — GLOBAL NAVIGATION */
+
+.crm-global-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    min-height: 72px;
+    padding: 0 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+
+    background: #111;
+    color: #fff;
+
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.12);
+}
+
+.crm-global-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.crm-global-logo {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+.crm-global-subtitle {
+    color: #a9a9ad;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+}
+
+.crm-global-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crm-nav-link {
+    position: relative;
+
+    min-height: 42px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border-radius: 10px;
+
+    color: #d7d7da;
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.crm-nav-link:hover {
+    background: #242426;
+    color: #fff;
+}
+
+.crm-nav-link.is-active {
+    background: #fff;
+    color: #111;
+}
+
+.crm-nav-badge {
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+
+    background: #ff4d4f;
+    color: #fff;
+
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.crm-nav-link.is-active .crm-nav-badge {
+    background: #111;
+    color: #fff;
+}
+
+
+@media (max-width: 760px) {
+    .crm-global-header {
+        position: static;
+
+        min-height: auto;
+        padding: 14px 14px 12px;
+
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .crm-global-nav {
+        width: 100%;
+
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .crm-nav-link {
+        flex: 0 0 auto;
+
+        min-height: 38px;
+        padding: 0 11px;
+
+        font-size: 13px;
+    }
+}
+
+/* GLOBAL FINANCE OVERVIEW */
+
+.finance-overview-summary {
+    grid-template-columns:
+        repeat(3, 1fr);
+}
+
+.finance-overview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.finance-overview-card {
+    display: block;
+
+    padding: 22px;
+
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    color: inherit;
+    text-decoration: none;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.finance-overview-card:hover {
+    transform: translateY(-1px);
+    border-color: #cfcfd3;
+
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.finance-overview-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+
+    margin-bottom: 18px;
+}
+
+.finance-overview-title {
+    font-size: 19px;
+    font-weight: 750;
+}
+
+.finance-overview-date {
+    margin-top: 5px;
+
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.finance-overview-status {
+    padding: 6px 9px;
+
+    border-radius: 9px;
+
+    background: #f1f1f2;
+    color: #555;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.finance-overview-status.current {
+    background: #e9f7ed;
+    color: #237a3d;
+}
+
+.finance-overview-status.future {
+    background: #eef3ff;
+    color: #365fa8;
+}
+
+.finance-overview-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(5, 1fr);
+    gap: 14px;
+}
+
+.finance-overview-grid > div {
+    padding: 13px;
+
+    background: #f7f7f8;
+    border-radius: 10px;
+}
+
+.finance-overview-grid span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.finance-overview-grid strong {
+    font-size: 15px;
+}
+
+
+@media (max-width: 900px) {
+    .finance-overview-summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .finance-overview-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+
+@media (max-width: 600px) {
+    .finance-overview-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* CLICKABLE BOOKING ROW */
+
+.booking-clickable-row {
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.booking-clickable-row:hover {
+    background: #fafafa;
+    border-color: #cfcfd3;
+
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.booking-clickable-row:active {
+    transform: translateY(1px);
+}
+
+.booking-clickable-row:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: 2px;
+}
+
+/* CRM AUTH / LOGOUT */
+.crm-nav-logout-form {
+    margin: 0 0 0 6px;
+}
+
+.crm-nav-logout {
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid #363638;
+    border-radius: 10px;
+    background: transparent;
+    color: #bdbdc2;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.crm-nav-logout:hover {
+    background: #242426;
+    border-color: #4a4a4d;
+    color: #fff;
+}
+
+@media (max-width: 760px) {
+    .crm-nav-logout-form {
+        flex: 0 0 auto;
+        margin-left: 4px;
+    }
+
+    .crm-nav-logout {
+        min-height: 38px;
+        padding: 0 11px;
+    }
+}

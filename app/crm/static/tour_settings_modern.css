@@ -1,0 +1,537 @@
+/* =========================================
+   WOWDERTOUR CRM — MODERN DIRECTION SETTINGS
+========================================= */
+
+.direction-settings-panel {
+    margin-top: 14px;
+    padding: 0 !important;
+
+    border: 1px solid #e3e4e7;
+    border-radius: 18px;
+
+    background: #f7f7f8;
+
+    overflow: hidden;
+}
+
+
+/* Header */
+.direction-settings-heading {
+    padding: 22px 24px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    background: #fff;
+    border-bottom: 1px solid #e7e7e9;
+}
+
+.direction-settings-eyebrow {
+    margin-bottom: 5px;
+
+    color: #8a8d94;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.direction-settings-heading h3 {
+    margin: 0;
+
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.direction-settings-heading p {
+    margin: 6px 0 0;
+
+    color: #777b83;
+    font-size: 13px;
+}
+
+.settings-state {
+    flex: 0 0 auto;
+
+    padding: 7px 10px;
+
+    border-radius: 999px;
+
+    background: #f0f0f1;
+    color: #676a70;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.settings-state-active {
+    background: #e9f8ee;
+    color: #24733a;
+}
+
+
+/* Main form */
+.direction-settings-modern {
+    display: block;
+}
+
+.settings-section {
+    margin: 16px;
+    padding: 22px;
+
+    border: 1px solid #e2e3e6;
+    border-radius: 15px;
+
+    background: #fff;
+}
+
+.settings-section-title {
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.settings-section-icon {
+    flex: 0 0 auto;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #111;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.settings-section-title h4 {
+    margin: 0;
+
+    font-size: 15px;
+}
+
+.settings-section-title p {
+    margin: 4px 0 0;
+
+    color: #84878e;
+    font-size: 12px;
+}
+
+
+/* Main fields */
+.settings-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.settings-grid-main {
+    grid-template-columns:
+        minmax(0, 1.2fr)
+        minmax(220px, 0.8fr);
+}
+
+.settings-full-width {
+    grid-column: 1 / -1;
+}
+
+.direction-settings-modern .form-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #5e6269;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.direction-settings-modern input[type="text"],
+.direction-settings-modern select,
+.direction-settings-modern textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    border: 1px solid #d9dade;
+    border-radius: 11px;
+
+    background: #fafafa;
+
+    font: inherit;
+
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.direction-settings-modern input[type="text"],
+.direction-settings-modern select {
+    min-height: 44px;
+    padding: 0 13px;
+}
+
+.direction-settings-modern textarea {
+    padding: 13px 14px;
+
+    resize: vertical;
+    line-height: 1.45;
+}
+
+.direction-settings-modern input:focus,
+.direction-settings-modern select:focus,
+.direction-settings-modern textarea:focus {
+    outline: none;
+
+    border-color: #111;
+    background: #fff;
+
+    box-shadow:
+        0 0 0 3px rgba(17, 17, 17, 0.06);
+}
+
+.direction-settings-modern .form-field small {
+    margin-top: 6px;
+
+    display: block;
+
+    color: #96999f;
+    font-size: 10px;
+}
+
+
+/* Content blocks */
+.settings-content-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.settings-content-card {
+    padding: 16px;
+
+    border: 1px solid #e3e4e7;
+    border-radius: 13px;
+
+    background: #fafafa;
+}
+
+.settings-content-card-wide {
+    grid-column: 1 / -1;
+}
+
+.settings-content-card-head {
+    margin-bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-content-emoji {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #fff;
+    border: 1px solid #e5e5e7;
+
+    font-size: 17px;
+}
+
+.settings-content-card-head strong {
+    display: block;
+
+    font-size: 13px;
+}
+
+.settings-content-card-head span:not(.settings-content-emoji) {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #8a8d94;
+    font-size: 10px;
+}
+
+.settings-content-card textarea {
+    min-height: 145px;
+
+    background: #fff;
+}
+
+.settings-content-card-wide textarea {
+    min-height: 190px;
+}
+
+
+/* Publication */
+.settings-publish-section {
+    padding-bottom: 18px;
+}
+
+.modern-toggle-row {
+    min-height: 64px;
+    padding: 14px 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    border: 1px solid #e3e4e7;
+    border-radius: 12px;
+
+    background: #fafafa;
+
+    cursor: pointer;
+}
+
+.modern-toggle-row > div {
+    flex: 1;
+}
+
+.modern-toggle-row strong {
+    display: block;
+
+    font-size: 13px;
+}
+
+.modern-toggle-row > div span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #85888f;
+    font-size: 10px;
+}
+
+.modern-toggle-row input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+}
+
+.modern-toggle {
+    position: relative;
+
+    flex: 0 0 auto;
+
+    width: 44px;
+    height: 25px;
+
+    border-radius: 999px;
+
+    background: #d1d2d5;
+
+    transition: background 0.15s ease;
+}
+
+.modern-toggle::after {
+    content: "";
+
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    width: 19px;
+    height: 19px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.16);
+
+    transition: transform 0.15s ease;
+}
+
+.modern-toggle-row input:checked + .modern-toggle {
+    background: #111;
+}
+
+.modern-toggle-row input:checked + .modern-toggle::after {
+    transform: translateX(19px);
+}
+
+
+/* Sticky-feeling save bar */
+.settings-save-bar {
+    margin: 16px;
+    padding: 16px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    border-radius: 14px;
+
+    background: #151515;
+    color: #fff;
+}
+
+.settings-save-bar strong {
+    display: block;
+
+    font-size: 12px;
+}
+
+.settings-save-bar span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #a8aaae;
+    font-size: 10px;
+}
+
+.settings-primary-save {
+    flex: 0 0 auto;
+
+    min-width: 210px;
+    min-height: 42px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #fff !important;
+    color: #111 !important;
+
+    font-weight: 750;
+}
+
+
+/* Danger zone */
+.settings-danger-zone {
+    margin: 16px;
+    padding: 17px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    border: 1px solid #ead9d9;
+    border-radius: 14px;
+
+    background: #fff;
+}
+
+.settings-danger-zone h4 {
+    margin: 0;
+
+    font-size: 13px;
+}
+
+.settings-danger-zone p {
+    margin: 4px 0 0;
+
+    color: #8a8d94;
+    font-size: 10px;
+}
+
+.settings-danger-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-danger-actions form {
+    margin: 0;
+}
+
+.settings-danger-actions button {
+    min-height: 38px;
+    padding: 0 13px;
+
+    white-space: nowrap;
+}
+
+
+/* Remove legacy grid behavior from this specific form */
+.direction-settings-modern.direction-settings-form {
+    grid-template-columns: none !important;
+    gap: 0 !important;
+}
+
+
+/* Responsive */
+@media (max-width: 900px) {
+    .settings-grid-main,
+    .settings-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-content-card-wide {
+        grid-column: auto;
+    }
+
+    .settings-save-bar,
+    .settings-danger-zone {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .settings-primary-save {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .settings-danger-actions {
+        width: 100%;
+    }
+
+    .settings-danger-actions form {
+        flex: 1;
+    }
+
+    .settings-danger-actions button {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 620px) {
+    .direction-settings-heading {
+        padding: 18px;
+
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .settings-section {
+        margin: 10px;
+        padding: 16px;
+    }
+
+    .settings-save-bar,
+    .settings-danger-zone {
+        margin: 10px;
+    }
+
+    .settings-danger-actions {
+        flex-direction: column;
+    }
+
+    .settings-danger-actions form {
+        width: 100%;
+    }
+}

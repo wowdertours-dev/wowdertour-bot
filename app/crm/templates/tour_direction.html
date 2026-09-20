@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tour.title }} — WowderTour CRM</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/crm_media.css">
+    <link rel="stylesheet" href="/static/tour_direction.css">
+
+    <script defer src="/static/crm_media.js"></script>
+</head>
+
+<body>
+
+<main class="container direction-page">
+
+    <a href="/tours/manage" class="direction-back">← Все туры</a>
+
+    <section class="direction-hero">
+        <div>
+            <div class="direction-category">
+                {% if tour.category.emoji %}{{ tour.category.emoji }}{% endif %}
+                {{ tour.category.title }}
+            </div>
+
+            <h1>{{ tour.title }}</h1>
+
+            <div class="direction-hero-meta">
+                {% if tour.departures %}
+                    {{ tour.departures|length }}
+                    {% if tour.departures|length == 1 %}
+                        поездка
+                    {% elif tour.departures|length in [2,3,4] %}
+                        поездки
+                    {% else %}
+                        поездок
+                    {% endif %}
+                    · ближайшая {{ tour.departures[0].start_date.strftime("%d.%m.%Y") }}
+                {% else %}
+                    Дат пока нет
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="direction-hero-actions">
+            {% if tour.active %}
+            <span class="direction-status active">● Активно</span>
+            {% else %}
+            <span class="direction-status">● Скрыто</span>
+            {% endif %}
+
+            <details class="direction-tool">
+                <summary title="Настройки направления">⚙️</summary>
+
+                <div class="direction-tool-panel settings-panel">
+                    <div class="panel-heading modal-panel-heading">
+                        <div>
+                            <strong>Настройки направления</strong>
+                            <span>Основное, контент и публикация</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="modal-close"
+                            aria-label="Закрыть"
+                            onclick="this.closest('details').removeAttribute('open')"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <form method="post" action="/tours/{{ tour.id }}/update" class="direction-settings-form settings-form-modern">
+                        <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+
+                        <div class="settings-form-scroll">
+
+                        <section class="settings-form-section">
+                            <div class="settings-section-head">
+                                <div>
+                                    <h4>Основная информация</h4>
+                                    <p>Название, категория и краткое описание направления</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-main-grid">
+                                <div class="form-field">
+                                    <label>Название направления</label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value="{{ tour.title }}"
+                                        placeholder="Например: Кировск"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label>Категория</label>
+                                    <select name="category_id" required>
+                                        {% for category in categories %}
+                                        <option
+                                            value="{{ category.id }}"
+                                            {% if category.id == tour.category_id %}selected{% endif %}
+                                        >
+                                            {% if category.emoji %}{{ category.emoji }}{% endif %}
+                                            {{ category.title }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-field settings-wide">
+                                    <label>Короткое описание</label>
+                                    <textarea
+                                        name="description"
+                                        rows="3"
+                                        placeholder="Коротко опиши направление — что это за поездка и для кого"
+                                    >{{ tour.description or '' }}</textarea>
+                                </div>
+                            </div>
+                        </section>
+
+
+                        <section class="settings-form-section">
+                            <div class="settings-section-head">
+                                <div>
+                                    <h4>Информация для Telegram</h4>
+                                    <p>Эти блоки пользователь увидит внутри направления</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-content-layout">
+
+                                <div class="settings-field-card">
+                                    <div class="settings-field-card-head">
+                                        <span class="settings-field-icon">🏠</span>
+                                        <div>
+                                            <strong>Жильё</strong>
+                                            <span>Описание проживания</span>
+                                        </div>
+                                    </div>
+
+                                    <textarea
+                                        name="accommodation_description"
+                                        rows="8"
+                                        placeholder="Где живём, какой формат размещения, что есть рядом..."
+                                    >{{ tour.accommodation_description or '' }}</textarea>
+                                </div>
+
+
+                                <div class="settings-field-card">
+                                    <div class="settings-field-card-head">
+                                        <span class="settings-field-icon">✅</span>
+                                        <div>
+                                            <strong>Что входит в стоимость</strong>
+                                            <span>Что уже включено в цену тура</span>
+                                        </div>
+                                    </div>
+
+                                    <textarea
+                                        name="includes"
+                                        rows="8"
+                                        placeholder="Поезд, проживание, трансфер, обучение, гиды..."
+                                    >{{ tour.includes or '' }}</textarea>
+                                </div>
+
+
+                                <div class="settings-field-card settings-field-card-wide">
+                                    <div class="settings-field-card-head">
+                                        <span class="settings-field-icon">🗓</span>
+                                        <div>
+                                            <strong>Программа тура</strong>
+                                            <span>План поездки по дням</span>
+                                        </div>
+                                    </div>
+
+                                    <textarea
+                                        name="program"
+                                        rows="10"
+                                        placeholder="День 1 — приезд и заселение&#10;День 2 — катание и обучение&#10;День 3 — фрирайд..."
+                                    >{{ tour.program or '' }}</textarea>
+                                </div>
+
+                            </div>
+                        </section>
+
+
+                        <section class="settings-form-section settings-publish-block">
+                            <div class="settings-publish-copy">
+                                <strong>Показывать направление</strong>
+                                <span>Если выключить, направление исчезнет из Telegram, но данные сохранятся</span>
+                            </div>
+
+                            <label class="settings-mini-toggle">
+                                <input
+                                    type="checkbox"
+                                    name="active"
+                                    value="1"
+                                    {% if tour.active %}checked{% endif %}
+                                >
+                                <span class="settings-mini-toggle-track"></span>
+                            </label>
+                        </section>
+
+
+                        <div class="settings-footer">
+                            <div class="settings-footer-note">
+                                Изменения применятся сразу после сохранения
+                            </div>
+
+                            <button type="submit" class="primary-button settings-save">
+                                Сохранить изменения
+                            </button>
+                        </div>
+
+                        </div>
+                    </form>
+                </div>
+            </details>
+
+            <details class="direction-tool">
+                <summary title="Фотографии">📸</summary>
+
+                <div class="direction-tool-panel photos-panel">
+                    <div class="modal-panel-heading photos-modal-heading">
+                        <div>
+                            <strong>Фотографии направления</strong>
+                            <span>Жильё и атмосфера тура</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="modal-close"
+                            aria-label="Закрыть"
+                            onclick="this.closest('details').removeAttribute('open')"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <div class="photo-sections">
+
+                        <section>
+                            <h3>🏠 Жильё</h3>
+
+                            <form method="post" action="/tours/{{ tour.id }}/media/add" enctype="multipart/form-data" class="media-upload-form">
+                                <input type="hidden" name="section" value="accommodation">
+                                <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+
+                                <div class="form-field">
+                                    <label>Добавить фото жилья</label>
+                                    <input type="file" name="photos" accept="image/*" multiple required>
+                                </div>
+
+                                <button type="submit" class="primary-button">Загрузить</button>
+                            </form>
+
+                            <div class="media-grid">
+                                {% for media in tour.media %}
+                                {% if media.section == "accommodation" %}
+                                <div class="media-card {% if not media.active %}inactive{% endif %}">
+                                    {% if media.url %}
+                                    <img src="{{ media.url }}" alt="{{ media.title or tour.title }}" class="media-preview">
+                                    {% endif %}
+
+                                    <div class="media-name">{{ media.title or 'Фото' }}</div>
+
+                                    <div class="media-actions">
+                                        <form method="post" action="/media/{{ media.id }}/toggle">
+                                            <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+                                            <button type="submit" class="secondary-button">
+                                                {% if media.active %}Скрыть{% else %}Показать{% endif %}
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="/media/{{ media.id }}/delete" onsubmit="return confirm('Удалить это фото?');">
+                                            <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+                                            <button type="submit" class="danger-button">Удалить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3>✨ Атмосфера</h3>
+
+                            <form method="post" action="/tours/{{ tour.id }}/media/add" enctype="multipart/form-data" class="media-upload-form">
+                                <input type="hidden" name="section" value="activity">
+                                <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+
+                                <div class="form-field">
+                                    <label>Добавить фото атмосферы</label>
+                                    <input type="file" name="photos" accept="image/*" multiple required>
+                                </div>
+
+                                <button type="submit" class="primary-button">Загрузить</button>
+                            </form>
+
+                            <div class="media-grid">
+                                {% for media in tour.media %}
+                                {% if media.section == "activity" %}
+                                <div class="media-card {% if not media.active %}inactive{% endif %}">
+                                    {% if media.url %}
+                                    <img src="{{ media.url }}" alt="{{ media.title or tour.title }}" class="media-preview">
+                                    {% endif %}
+
+                                    <div class="media-name">{{ media.title or 'Фото' }}</div>
+
+                                    <div class="media-actions">
+                                        <form method="post" action="/media/{{ media.id }}/toggle">
+                                            <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+                                            <button type="submit" class="secondary-button">
+                                                {% if media.active %}Скрыть{% else %}Показать{% endif %}
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="/media/{{ media.id }}/delete" onsubmit="return confirm('Удалить это фото?');">
+                                            <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+                                            <button type="submit" class="danger-button">Удалить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </details>
+        </div>
+    </section>
+
+
+    <section class="direction-departures">
+        <div class="departures-heading">
+            <div>
+                <h2>Даты выездов</h2>
+                <p>Поездки отсортированы по дате — от более ранних к более поздним.</p>
+            </div>
+
+            <details class="add-departure">
+                <summary class="primary-button">+ Добавить дату выезда</summary>
+
+                <div class="add-departure-panel">
+                    <form method="post" action="/tours/{{ tour.id }}/departures/add" class="add-departure-form">
+                        <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+
+                        <div class="form-field">
+                            <label>Начало</label>
+                            <input type="date" name="start_date" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Окончание</label>
+                            <input type="date" name="end_date" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Цена, ₽</label>
+                            <input type="number" name="price" min="0" step="1" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Вместимость</label>
+                            <input type="number" name="capacity" min="1" value="20" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Предоплата, ₽</label>
+                            <input type="number" name="prepayment_amount" min="0" step="1" value="0">
+                        </div>
+
+                                                <!-- WOWDER_SEASON_ADD_FIELD -->
+                        <div class="form-field season-field">
+                            <label>Сезон</label>
+                            <input type="text" name="season" placeholder="Например: 2026/27" pattern="\d{4}[/\-]\d{2,4}" title="Например: 2026/27" autocomplete="off">
+                            <small>Пустое поле = определить автоматически по дате начала.</small>
+                        </div>
+
+<div class="form-field add-notes">
+                            <label>Комментарий</label>
+                            <input type="text" name="notes" placeholder="Необязательно">
+                        </div>
+
+                        <button type="submit" class="primary-button add-submit">Создать поездку</button>
+                    </form>
+                </div>
+            </details>
+        </div>
+
+        <div class="departure-view-tabs">
+            <a href="/tours/{{ tour.id }}/manage?view=active"
+               class="departure-view-tab {% if view == 'active' %}active{% endif %}">
+                Активные <span>{{ active_count }}</span>
+            </a>
+
+            <a href="/tours/{{ tour.id }}/manage?view=all"
+               class="departure-view-tab {% if view == 'all' %}active{% endif %}">
+                Все <span>{{ all_count }}</span>
+            </a>
+
+            <a href="/tours/{{ tour.id }}/manage?view=past"
+               class="departure-view-tab {% if view == 'past' %}active{% endif %}">
+                Прошедшие <span>{{ past_count }}</span>
+            </a>
+
+            <a href="/tours/{{ tour.id }}/manage?view=archive"
+               class="departure-view-tab {% if view == 'archive' %}active{% endif %}">
+                Архив <span>{{ archive_count }}</span>
+            </a>
+        </div>
+
+        <div class="departure-view-hint">
+            {% if view == "active" %}
+                Текущие и будущие поездки. Прошедшие скрыты из рабочего списка.
+            {% elif view == "past" %}
+                Прошедшие определяются автоматически по дате окончания.
+            {% elif view == "archive" %}
+                Архив — вручную убранные из работы поездки. Данные, заявки и финансы сохранены.
+            {% else %}
+                Все неархивные поездки независимо от даты и видимости.
+            {% endif %}
+        </div>
+
+        <div class="departure-cards">
+            {% for departure in visible_departures %}
+
+            {% set occupied = departure_people_count(departure) %}
+            {% set duration_days = (departure.end_date - departure.start_date).days + 1 %}
+            {% set nights = duration_days - 1 %}
+
+            <article class="departure-card {% if departure.end_date < today %}past{% elif departure.booking_open and departure.active %}open{% endif %}">
+
+                <div class="departure-summary">
+                    <div class="date-box">
+                        <div class="date-icon">📅</div>
+
+                        <div>
+                            <strong>
+                                {{ departure.start_date.strftime("%d.%m.%Y") }}
+                                —
+                                {{ departure.end_date.strftime("%d.%m.%Y") }}
+                            </strong>
+
+                            <span>{{ duration_days }} дн. · {{ nights }} ноч.</span>
+                        </div>
+
+                        {% if departure.archived %}
+                        <span class="departure-chip archived-chip">● Архив</span>
+                        {% elif departure.end_date < today %}
+                        <span class="departure-chip past-chip">● Прошедшая</span>
+                        {% elif departure.start_date <= today <= departure.end_date %}
+                        <span class="departure-chip current-chip">● Идёт сейчас</span>
+                        {% elif not departure.active %}
+                        <span class="departure-chip past-chip">● Скрыта</span>
+                        {% elif not departure.booking_open %}
+                        <span class="departure-chip closed-chip">● Продажи закрыты</span>
+                        {% else %}
+                        <span class="departure-chip open-chip">● Продажи открыты</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="departure-stats">
+                        <div>
+                            <span>₽ Цена</span>
+                            <strong>{{ "{:,}".format(departure.price|int).replace(",", " ") }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>👥 Занято</span>
+                            <strong>{{ occupied }} из {{ departure.capacity }}</strong>
+                        </div>
+
+                        <div>
+                            <span>💳 Предоплата</span>
+                            <strong>{{ "{:,}".format(departure.prepayment_amount|int).replace(",", " ") }} ₽</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="departure-editor">
+                    <form method="post" action="/departures/{{ departure.id }}/settings" class="departure-form">
+                        <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage">
+
+                        <div class="departure-fields">
+                            <div class="form-field">
+                                <label>Начало</label>
+                                <input type="date" name="start_date" value="{{ departure.start_date.isoformat() }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label>Окончание</label>
+                                <input type="date" name="end_date" value="{{ departure.end_date.isoformat() }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label>Цена, ₽</label>
+                                <input type="number" name="price" min="0" value="{{ departure.price|int }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label>Вместимость</label>
+                                <input type="number" name="capacity" min="{{ occupied }}" value="{{ departure.capacity }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label>Предоплата, ₽</label>
+                                <input type="number" name="prepayment_amount" min="0" value="{{ departure.prepayment_amount|int }}">
+                            </div>
+                        </div>
+
+                                                <!-- WOWDER_SEASON_EDIT_FIELD -->
+                        <div class="form-field season-field">
+                            <label>Сезон</label>
+                            <input type="text" name="season" placeholder="Например: 2026/27" pattern="\d{4}[/\-]\d{2,4}" title="Например: 2026/27" autocomplete="off" value="{{ departure.season or '' }}">
+                            <small>Пустое поле = определить автоматически по дате начала.</small>
+                        </div>
+
+<div class="form-field departure-notes">
+                            <label>Комментарий</label>
+                            <input type="text" name="notes" value="{{ departure.notes or '' }}" placeholder="Добавить комментарий...">
+                        </div>
+
+                        <div class="departure-actions-row">
+                            <div class="departure-checks">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        name="booking_open"
+                                        value="1"
+                                        {% if departure.booking_open %}checked{% endif %}
+                                        {% if departure.end_date < today or departure.archived %}disabled{% endif %}
+                                    >
+                                    Принимать заявки
+                                </label>
+
+                                <label>
+                                    <input type="checkbox" name="active" value="1" {% if departure.active %}checked{% endif %}>
+                                    Показывать поездку
+                                </label>
+                            </div>
+
+                            <div class="departure-primary-actions">
+                                <a href="/departures/{{ departure.id }}" class="secondary-button">↗ Открыть поездку</a>
+                                <button type="submit" class="save-button">💾 Сохранить</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="departure-secondary-actions">
+                        {% if departure.archived %}
+                        <form
+                            method="post"
+                            action="/departures/{{ departure.id }}/restore"
+                            onsubmit="return confirm('Вернуть эту поездку из архива?');"
+                        >
+                            <input
+                                type="hidden"
+                                name="return_to"
+                                value="/tours/{{ tour.id }}/manage?view=archive"
+                            >
+                            <button type="submit" class="secondary-button">
+                                Вернуть из архива
+                            </button>
+                        </form>
+                        {% else %}
+                        <form
+                            method="post"
+                            action="/departures/{{ departure.id }}/archive"
+                            onsubmit="return confirm('Архивировать эту поездку? Она исчезнет из рабочего списка, но заявки и финансы сохранятся.');"
+                        >
+                            <input
+                                type="hidden"
+                                name="return_to"
+                                value="/tours/{{ tour.id }}/manage?view={{ view }}"
+                            >
+                            <button type="submit" class="secondary-button">
+                                Архивировать
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <form method="post" action="/departures/{{ departure.id }}/delete" onsubmit="return confirm('Удалить эту поездку?');">
+                            <input type="hidden" name="return_to" value="/tours/{{ tour.id }}/manage?view={{ view }}">
+                            <button type="submit" class="danger-button">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+
+            {% else %}
+
+            <div class="empty">
+                {% if view == "active" %}
+                    Нет текущих или будущих поездок.
+                {% elif view == "past" %}
+                    Прошедших поездок пока нет.
+                {% elif view == "archive" %}
+                    Архив пуст.
+                {% else %}
+                    У направления пока нет поездок.
+                {% endif %}
+            </div>
+
+            {% endfor %}
+        </div>
+    </section>
+
+</main>
+
+<script id="direction-modal-behavior">
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    document
+        .querySelectorAll(".direction-tool[open]")
+        .forEach((details) => {
+            details.removeAttribute("open");
+        });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Заявки — WowderTour CRM</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+
+    <style>
+        .bookings-toolbar {
+            display: grid;
+            grid-template-columns:
+                minmax(220px, 1.5fr)
+                minmax(160px, 0.8fr)
+                minmax(220px, 1fr)
+                minmax(170px, 0.8fr)
+                auto;
+            gap: 10px;
+            align-items: end;
+            margin: 20px 0;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .bookings-count {
+            margin: 8px 0 16px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .all-bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .all-booking-card {
+            display: grid;
+            grid-template-columns:
+                minmax(220px, 1.5fr)
+                minmax(190px, 1fr)
+                100px
+                120px
+                120px
+                130px
+                155px;
+            gap: 14px;
+            align-items: center;
+            padding: 16px 18px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition:
+                border-color .16s ease,
+                box-shadow .16s ease,
+                transform .16s ease;
+        }
+
+        .all-booking-card:hover {
+            border-color: #c7c9ce;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .045);
+            transform: translateY(-1px);
+        }
+
+        .booking-code {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .booking-tour {
+            font-weight: 650;
+        }
+
+        .booking-tour-date {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .metric-value {
+            margin-top: 3px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #f2f2f2;
+            font-size: 12px;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .bookings-toolbar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .all-booking-card {
+                grid-template-columns:
+                    minmax(220px, 1fr)
+                    minmax(180px, 1fr)
+                    155px;
+            }
+
+            .compact-metric {
+                display: none;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .bookings-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .all-booking-card {
+                grid-template-columns: 1fr;
+            }
+
+            .compact-metric {
+                display: block;
+            }
+
+            .booking-row-actions {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        .booking-row-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: stretch;
+            width: 155px;
+            min-width: 155px;
+        }
+
+        .booking-row-actions form {
+            margin: 0;
+        }
+
+        .booking-close-unpaid {
+            width: 100%;
+            min-height: 32px;
+            padding: 0 9px;
+            border: 1px solid #d9dadd;
+            border-radius: 8px;
+            background: #fff;
+            color: #666a71;
+            font-size: 10px;
+            font-weight: 650;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .booking-close-unpaid:hover {
+            background: #f5f5f6;
+            color: #222;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div>
+        <div class="logo">
+            WOWDERTOUR
+        </div>
+
+        <div class="subtitle">
+            CRM · Заявки
+        </div>
+    </div>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+        <a
+            href="/tours/manage"
+            class="back-link"
+        >
+            🏔 Туры
+        </a>
+
+        <a
+            href="/"
+            class="back-link"
+        >
+            ← Главная
+        </a>
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="page-title">
+
+        <h1>
+            Заявки
+        </h1>
+
+        <p>
+            Все заявки WowderTour в одном месте
+        </p>
+
+    </div>
+
+
+    <form
+        method="get"
+        action="/bookings"
+        class="bookings-toolbar"
+    >
+
+        <div class="form-field">
+            <label>
+                Поиск
+            </label>
+
+            <input
+                type="text"
+                name="q"
+                value="{{ q }}"
+                placeholder="Имя, телефон, Telegram или WT-..."
+            >
+        </div>
+
+
+        <div class="form-field">
+            <label>
+                Статус
+            </label>
+
+            <select name="status">
+
+                <option value="">
+                    Все статусы
+                </option>
+
+                {% for status in statuses %}
+
+                <option
+                    value="{{ status }}"
+                    {% if selected_status == status %}
+                    selected
+                    {% endif %}
+                >
+                    {{ status }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+        </div>
+
+
+        <div class="form-field">
+            <label>
+                Выезд
+            </label>
+
+            <select name="departure_id">
+
+                <option value="">
+                    Все выезды
+                </option>
+
+                {% for departure in departures %}
+
+                <option
+                    value="{{ departure.id }}"
+                    {% if selected_departure_id == departure.id %}
+                    selected
+                    {% endif %}
+                >
+                    {{ departure.tour.title }}
+                    ·
+                    {{ departure.start_date.strftime("%d.%m.%Y") }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+        </div>
+
+
+        <div class="form-field">
+            <label>
+                Сортировка
+            </label>
+
+            <select name="sort">
+
+                <option
+                    value="newest"
+                    {% if selected_sort == "newest" %}selected{% endif %}
+                >
+                    Сначала новые
+                </option>
+
+                <option
+                    value="oldest"
+                    {% if selected_sort == "oldest" %}selected{% endif %}
+                >
+                    Сначала старые
+                </option>
+
+                <option
+                    value="name"
+                    {% if selected_sort == "name" %}selected{% endif %}
+                >
+                    По имени
+                </option>
+
+                <option
+                    value="amount_desc"
+                    {% if selected_sort == "amount_desc" %}selected{% endif %}
+                >
+                    Сначала дорогие
+                </option>
+
+                <option
+                    value="amount_asc"
+                    {% if selected_sort == "amount_asc" %}selected{% endif %}
+                >
+                    Сначала дешёвые
+                </option>
+
+            </select>
+        </div>
+
+
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            Применить
+        </button>
+
+    </form>
+
+
+    <div class="bookings-count">
+        Найдено заявок: {{ rows|length }}
+    </div>
+
+
+    {% if rows %}
+
+    <div class="all-bookings-list">
+
+        {% for item in rows %}
+
+        {% set booking = item.booking %}
+
+        <div
+            class="all-booking-card"
+            data-href="/bookings/{{ booking.id }}"
+            onclick="
+                if (!event.target.closest('a, button, input, select, textarea, form')) {
+                    window.location.href = this.dataset.href;
+                }
+            "
+        >
+
+            <div>
+                <strong>
+                    {{ booking.applicant_full_name or booking.customer.full_name }}
+                </strong>
+
+                <div class="booking-code">
+                    {{ booking_public_number(booking.id) }}
+                    ·
+                    {{ booking.people_count }} чел.
+                </div>
+
+                <div class="booking-code">
+                    {% if booking.created_at %}
+                        🕒 {{ booking.created_at.strftime("%d.%m.%Y · %H:%M") }}
+                    {% else %}
+                        🕒 —
+                    {% endif %}
+                </div>
+
+                <div class="booking-code">
+                    {% if booking.applicant_phone or booking.customer.phone %}
+                        📱 {{ booking.applicant_phone or booking.customer.phone }}
+                    {% endif %}
+
+                    {% set tg_username = booking.applicant_telegram_username or booking.customer.telegram_username %}
+
+                    {% if tg_username %}
+                        · @{{ tg_username }}
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <div>
+                <div class="booking-tour">
+                    {{ booking.departure.tour.title }}
+                </div>
+
+                <div class="booking-tour-date">
+                    {{ booking.departure.start_date.strftime("%d.%m.%Y") }}
+                    —
+                    {{ booking.departure.end_date.strftime("%d.%m.%Y") }}
+                </div>
+            </div>
+
+
+            <div class="compact-metric">
+                <div class="metric-label">
+                    Сумма
+                </div>
+
+                <div class="metric-value">
+                    {{ format_money(booking.agreed_price) }} ₽
+                </div>
+            </div>
+
+
+            <div class="compact-metric">
+                <div class="metric-label">
+                    Внесено
+                </div>
+
+                <div class="metric-value">
+                    {{ format_money(item.paid) }} ₽
+                </div>
+            </div>
+
+
+            <div class="compact-metric">
+                <div class="metric-label">
+                    Осталось
+                </div>
+
+                <div class="metric-value">
+                    {{ format_money(item.remaining) }} ₽
+                </div>
+            </div>
+
+
+            <div>
+                <span class="status-pill">
+                    {% if booking.status == "Новая" %}
+                        🆕 Новая
+                    {% elif booking.status == "Связались" %}
+                        🟡 Связались
+                    {% elif booking.status == "Предоплата" %}
+                        💸 Предоплата
+                    {% elif booking.status == "Оплачено" %}
+                        💰 Оплачено
+                    {% elif booking.status == "Не актуальна" %}
+                        ⚪ Не актуальна
+                    {% elif booking.status == "Отмена" %}
+                        🔴 Отмена
+                    {% else %}
+                        {{ booking.status }}
+                    {% endif %}
+                </span>
+            </div>
+
+
+            <div class="booking-row-actions">
+                {% if item.paid <= 0 and booking.status not in ["Не актуальна", "Отмена"] %}
+                <form
+                    method="post"
+                    action="/bookings/{{ booking.id }}/close-unpaid"
+                    onsubmit="return confirm('Закрыть эту заявку без оплаты? Она получит статус «Не актуальна».');"
+                >
+                    <input
+                        type="hidden"
+                        name="return_to"
+                        value="/bookings"
+                    >
+                    <button
+                        type="submit"
+                        class="booking-close-unpaid"
+                    >
+                        Закрыть без оплаты
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-list">
+        По выбранным условиям заявок нет
+    </div>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>

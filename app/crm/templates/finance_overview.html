@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Финансы — WowderTour CRM</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .finance-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 22px 0 28px;
+        }
+
+        .finance-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 14px;
+            border: 1px solid #dedede;
+            border-radius: 12px;
+            background: #fff;
+            color: #222;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .finance-filter:hover {
+            border-color: #bdbdbd;
+        }
+
+        .finance-filter.active {
+            background: #111;
+            border-color: #111;
+            color: #fff;
+        }
+
+        .finance-filter-count {
+            min-width: 22px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .07);
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .finance-filter.active .finance-filter-count {
+            background: rgba(255, 255, 255, .18);
+        }
+
+        .finance-tour-group {
+            margin: 0 0 18px;
+            border: 1px solid #dedede;
+            border-radius: 16px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .finance-tour-group > summary {
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .finance-tour-group > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .finance-tour-group[open] .finance-tour-chevron {
+            transform: rotate(90deg);
+        }
+
+        .finance-tour-chevron {
+            display: inline-block;
+            margin-right: 8px;
+            transition: transform .16s ease;
+        }
+
+        .finance-season-row {
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            margin: 18px 0 8px;
+        }
+
+        .finance-season-row .form-field {
+            min-width: 180px;
+            margin: 0;
+        }
+
+        .finance-tour-group-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0;
+            padding: 18px 20px;
+        }
+
+        .finance-tour-group-title {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .finance-tour-group-count {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .finance-overview-list {
+            display: grid;
+            gap: 14px;
+            padding: 0 14px 14px;
+        }
+
+        .finance-overview-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .finance-overview-status.archive {
+            background: #eeeeee;
+            color: #555;
+        }
+
+        @media (max-width: 720px) {
+            .finance-filter-bar {
+                gap: 6px;
+            }
+
+            .finance-filter {
+                padding: 9px 11px;
+            }
+
+            .finance-tour-group-title {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+
+    <div class="page-title">
+        <h1>Финансы</h1>
+        <p>Сводка по выбранным поездкам</p>
+    </div>
+
+    <div class="summary finance-overview-summary">
+        <div class="summary-card">
+            <span>Плановые продажи</span>
+            <strong>{{ format_money(totals.planned_sales) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Фактические продажи</span>
+            <strong>{{ format_money(totals.actual_sales) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Поступило</span>
+            <strong>{{ format_money(totals.gross_received) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Возвращено</span>
+            <strong>{{ format_money(totals.refunded) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Чистыми получено</span>
+            <strong>{{ format_money(totals.net_received) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Осталось получить</span>
+            <strong>{{ format_money(totals.remaining) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Расходы</span>
+            <strong>{{ format_money(totals.expenses_total) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Плановая прибыль</span>
+            <strong>{{ format_money(totals.planned_profit) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Фактическая прибыль</span>
+            <strong>{{ format_money(totals.actual_profit) }} ₽</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Участников с оплатой</span>
+            <strong>{{ totals.people_count }}</strong>
+        </div>
+    </div>
+
+
+    <form method="get" action="/finance" class="finance-season-row">
+        <input type="hidden" name="view" value="{{ view }}">
+        <div class="form-field">
+            <label>Сезон</label>
+            <select name="season" onchange="this.form.submit()">
+                {% for season in seasons %}
+                <option value="{{ season }}" {% if selected_season == season %}selected{% endif %}>
+                    {{ season }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <div class="section-header">
+        <div>
+            <h2>Поездки</h2>
+            <p>Поездки сгруппированы по направлениям и отсортированы по датам</p>
+        </div>
+    </div>
+
+    <nav class="finance-filter-bar" aria-label="Фильтр поездок">
+        <a class="finance-filter {% if view == 'active' %}active{% endif %}" href="/finance?view=active&season={{ selected_season }}">
+            Активные <span class="finance-filter-count">{{ counts.active }}</span>
+        </a>
+        <a class="finance-filter {% if view == 'upcoming' %}active{% endif %}" href="/finance?view=upcoming&season={{ selected_season }}">
+            Предстоящие <span class="finance-filter-count">{{ counts.upcoming }}</span>
+        </a>
+        <a class="finance-filter {% if view == 'past' %}active{% endif %}" href="/finance?view=past&season={{ selected_season }}">
+            Прошедшие <span class="finance-filter-count">{{ counts.past }}</span>
+        </a>
+        <a class="finance-filter {% if view == 'archive' %}active{% endif %}" href="/finance?view=archive&season={{ selected_season }}">
+            Архив <span class="finance-filter-count">{{ counts.archive }}</span>
+        </a>
+        <a class="finance-filter {% if view == 'all' %}active{% endif %}" href="/finance?view=all&season={{ selected_season }}">
+            Все <span class="finance-filter-count">{{ counts.all }}</span>
+        </a>
+    </nav>
+
+    {% if groups %}
+        {% for group in groups %}
+        <details class="finance-tour-group" {% if loop.first %}open{% endif %}>
+            <summary class="finance-tour-group-head">
+                <div class="finance-tour-group-title">
+                    <span class="finance-tour-chevron">›</span>
+                    {% if group.tour.category and group.tour.category.emoji %}
+                        {{ group.tour.category.emoji }}
+                    {% endif %}
+                    {{ group.tour.title }}
+                </div>
+                <div class="finance-tour-group-count">
+                    {{ group.rows|length }} поездок
+                </div>
+            </summary>
+
+            <div class="finance-overview-list">
+                {% for item in group.rows %}
+                {% set departure = item.departure %}
+
+                <a class="finance-overview-card" href="/departures/{{ departure.id }}/finance">
+                    <div class="finance-overview-card-head">
+                        <div>
+                            <div class="finance-overview-date">
+                                {{ departure.start_date.strftime("%d.%m.%Y") }}
+                                —
+                                {{ departure.end_date.strftime("%d.%m.%Y") }}
+                            </div>
+                        </div>
+
+                        {% if item.status == 'archive' %}
+                        <span class="finance-overview-status archive">Архив</span>
+                        {% elif item.status == 'past' %}
+                        <span class="finance-overview-status">Завершена</span>
+                        {% elif item.status == 'current' %}
+                        <span class="finance-overview-status current">Идёт сейчас</span>
+                        {% else %}
+                        <span class="finance-overview-status future">Предстоящая</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="finance-overview-grid">
+                        <div>
+                            <span>План</span>
+                            <strong>{{ format_money(item.planned_sales) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Факт продаж</span>
+                            <strong>{{ format_money(item.actual_sales) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Поступило</span>
+                            <strong>{{ format_money(item.gross_received) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Возвращено</span>
+                            <strong>{{ format_money(item.refunded) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Чистыми</span>
+                            <strong>{{ format_money(item.net_received) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Расходы</span>
+                            <strong>{{ format_money(item.expenses_total) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Факт. прибыль</span>
+                            <strong>{{ format_money(item.actual_profit) }} ₽</strong>
+                        </div>
+
+                        <div>
+                            <span>Участников</span>
+                            <strong>{{ item.people_count }}</strong>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    {% else %}
+    <div class="empty">В этой группе пока нет поездок</div>
+    {% endif %}
+
+</main>
+</body>
+</html>

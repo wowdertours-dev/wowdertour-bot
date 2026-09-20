@@ -1,21 +1,13 @@
-import asyncio
-from aiogram import Bot, Dispatcher
-from config import BOT_TOKEN
-from database.db import init_db
-from handlers.start import router as start_router
-from handlers.tours import router as tours_router
-from handlers.booking import router as booking_router
-from handlers.admin import router as admin_router
+"""Compatibility entrypoint for Railway/local launches.
 
-async def main():
-    init_db()
-    bot = Bot(token=BOT_TOKEN)
-    dp = Dispatcher()
-    dp.include_router(start_router)
-    dp.include_router(tours_router)
-    dp.include_router(booking_router)
-    dp.include_router(admin_router)
-    await dp.start_polling(bot)
+The production bot lives in app.bot.main. Keeping this tiny wrapper means both
+`python bot.py` and `python -m app.bot.main` start the same PostgreSQL-backed bot.
+"""
+
+import asyncio
+
+from app.bot.main import main
+
 
 if __name__ == "__main__":
     asyncio.run(main())
