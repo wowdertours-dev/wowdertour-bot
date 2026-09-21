@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/crm_media.css">
     <link rel="stylesheet" href="/static/tours_catalog.css">
+    <link rel="stylesheet" href="/static/category_media.css?v=1">
     <script defer src="/static/crm_media.js"></script>
 </head>
 <body>
@@ -214,6 +215,106 @@
             <div class="catalog-empty">
                 В этой категории пока нет направлений.
             </div>
+
+            {% endif %}
+
+            {% if not (category.tours | selectattr('active') | list) %}
+            {% set category_photos = category.media | selectattr('section', 'equalto', 'category') | list %}
+            <details class="category-media-panel">
+                <summary>
+                    <span class="category-media-label">📸 Общие фото категории</span>
+                    <span class="category-media-count">{{ category_photos | length }} фото</span>
+                    <span class="category-media-chevron" aria-hidden="true">⌄</span>
+                </summary>
+                <div class="media-management category-media-content">
+
+                <p class="media-help">
+                    Эти фото показываются в Telegram, пока у категории нет активных направлений.
+                </p>
+
+                <form
+                    method="post"
+                    action="/tour-categories/{{ category.id }}/media/add"
+                    enctype="multipart/form-data"
+                    class="media-upload-form"
+                >
+                    <div class="form-field">
+                        <label>Добавить фото</label>
+                        <input
+                            type="file"
+                            name="photos"
+                            accept="image/*"
+                            multiple
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        Загрузить фото
+                    </button>
+                </form>
+
+                <div class="media-grid">
+                    {% for media in category.media %}
+                    {% if media.section == "category" %}
+                    <div class="media-card {% if not media.active %}inactive{% endif %}">
+                        {% if media.url %}
+                        <img
+                            src="{{ media.url }}"
+                            alt="{{ media.title or category.title }}"
+                            class="media-preview"
+                        >
+                        {% else %}
+                        <div class="media-no-preview">
+                            Фото сохранено в Telegram
+                        </div>
+                        {% endif %}
+
+                        <div class="media-name">
+                            {{ media.title or "Фото" }}
+                        </div>
+
+                        <div class="media-actions">
+                            <form method="post" action="/media/{{ media.id }}/move">
+                                <input type="hidden" name="direction" value="up">
+                                <button
+                                    type="submit"
+                                    class="secondary-button"
+                                    title="Поднять выше"
+                                >↑</button>
+                            </form>
+
+                            <form method="post" action="/media/{{ media.id }}/move">
+                                <input type="hidden" name="direction" value="down">
+                                <button
+                                    type="submit"
+                                    class="secondary-button"
+                                    title="Опустить ниже"
+                                >↓</button>
+                            </form>
+
+                            <form method="post" action="/media/{{ media.id }}/toggle">
+                                <button type="submit" class="secondary-button">
+                                    {% if media.active %}Скрыть{% else %}Показать{% endif %}
+                                </button>
+                            </form>
+
+                            <form
+                                method="post"
+                                action="/media/{{ media.id }}/delete"
+                                onsubmit="return confirm('Удалить это фото?');"
+                            >
+                                <button type="submit" class="danger-button">
+                                    Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                </div>
+            </details>
 
             {% endif %}
         </section>

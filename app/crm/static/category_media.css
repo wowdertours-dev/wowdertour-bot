@@ -1,0 +1,17 @@
+/* Collapsible category photos on the tours catalog. */
+.category-media-panel { margin-top:16px; border:1px solid #e4e5e8; border-radius:12px; background:#fff; }
+.category-media-panel > summary { display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; list-style:none; border-radius:12px; }
+.category-media-panel > summary::-webkit-details-marker { display:none; }
+.category-media-panel > summary:hover { background:#f8f8f9; }
+.category-media-panel > summary:focus-visible { outline:2px solid #555; outline-offset:3px; }
+.category-media-label { font-size:14px; font-weight:650; }
+.category-media-count { font-size:12px; color:#6a6d73; white-space:nowrap; }
+.category-media-chevron { margin-left:auto; font-size:20px; line-height:1; }
+.category-media-panel[open] > summary .category-media-chevron { transform:rotate(180deg); }
+.category-media-content { padding:0 16px 16px; }
+.category-media-content > .media-help { margin:0 0 12px; font-size:13px; color:#6a6d73; }
+@media (max-width:480px) {
+    .category-media-panel > summary { flex-wrap:wrap; gap:6px; padding:12px; }
+    .category-media-content { padding:0 12px 12px; }
+    .category-media-label { font-size:13px; }
+}
