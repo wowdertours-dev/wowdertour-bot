@@ -12,6 +12,10 @@ from aiogram.fsm.context import (
 from aiogram.types import (
     CallbackQuery,
     Message,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
 )
 
@@ -47,6 +51,23 @@ router = Router(
 )
 
 logger = logging.getLogger(__name__)
+
+
+CANCEL_TEXT = "Отменить оформление"
+
+
+def with_cancel_button(markup=None):
+    if markup is None:
+        markup = InlineKeyboardMarkup(inline_keyboard=[])
+    markup = markup.model_copy(deep=True)
+    if isinstance(markup, InlineKeyboardMarkup):
+        markup.inline_keyboard.append([
+            InlineKeyboardButton(text=CANCEL_TEXT, callback_data="booking-cancel")
+        ])
+    elif isinstance(markup, ReplyKeyboardMarkup):
+        markup.keyboard.append([KeyboardButton(text=CANCEL_TEXT)])
+        markup.one_time_keyboard = False
+    return markup
 
 
 def format_price(
@@ -112,6 +133,27 @@ async def cancel_booking(
         reply_markup=ReplyKeyboardRemove(),
     )
     await send_main_menu(message)
+
+
+@router.message(F.text == CANCEL_TEXT)
+async def cancel_booking_button(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await message.answer(
+        "Оформление отменено.", reply_markup=ReplyKeyboardRemove()
+    )
+    await send_main_menu(message)
+
+
+@router.callback_query(F.data == "booking-cancel")
+async def cancel_booking_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await callback.answer()
+    await state.clear()
+    if callback.message:
+        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.answer(
+            "Оформление отменено.", reply_markup=ReplyKeyboardRemove()
+        )
+        await send_main_menu(callback.message)
 
 
 @router.callback_query(
@@ -272,7 +314,8 @@ async def choose_departure(
         (
             "Как тебя зовут?\n\n"
             "Напиши имя и фамилию."
-        )
+        ),
+        reply_markup=with_cancel_button(),
     )
 
 
@@ -289,7 +332,8 @@ async def enter_name(
 
     if len(full_name) < 2:
         await message.answer(
-            "Напиши имя и фамилию текстом."
+            "Напиши имя и фамилию текстом.",
+            reply_markup=with_cancel_button(),
         )
         return
 
@@ -307,7 +351,7 @@ async def enter_name(
             "Можно нажать кнопку ниже "
             "или написать номер вручную."
         ),
-        reply_markup=phone_keyboard(),
+        reply_markup=with_cancel_button(phone_keyboard()),
     )
 
 
@@ -394,7 +438,7 @@ async def save_phone_and_ask_people(
     await message.answer(
         "Сколько человек будет в заявке?",
         reply_markup=(
-            people_keyboard()
+            with_cancel_button(people_keyboard())
         ),
     )
 
@@ -502,7 +546,7 @@ async def enter_people(
             "«Пропустить»."
         ),
         reply_markup=(
-            skip_comment_keyboard()
+            with_cancel_button(skip_comment_keyboard())
         ),
     )
 
