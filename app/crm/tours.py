@@ -1,4 +1,6 @@
 import base64
+import binascii
+from urllib.parse import urlsplit
 
 from datetime import date
 from decimal import (
@@ -17,12 +19,14 @@ from fastapi.responses import (
     HTMLResponse,
     JSONResponse,
     RedirectResponse,
+    Response,
 )
 from sqlalchemy import (
+    case,
     func,
     select,
 )
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import defer, selectinload, with_expression
 
 from app.database.models import (
     Booking,
@@ -42,6 +46,59 @@ from app.repositories.tours import (
 
 
 router = APIRouter()
+
+MAX_PHOTO_BYTES = 10 * 1024 * 1024
+MAX_PHOTO_BATCH_BYTES = 20 * 1024 * 1024
+MAX_PHOTO_BATCH_COUNT = 5
+
+
+def media_preview_option():
+    # Return only availability, never the potentially huge base64 payload.
+    # This is a read-only projection; stored URLs remain unchanged.
+    return with_expression(
+        TourMedia.url,
+        case(
+            (TourMedia.url.is_not(None) & (TourMedia.url != ""), "available"),
+            else_=None,
+        ),
+    )
+
+
+@router.get("/media/{media_id}/image")
+async def media_image(media_id: int):
+    # Protected by the same CRM authentication middleware as the gallery.
+    async with SessionLocal() as session:
+        source = await session.scalar(
+            select(TourMedia.url).where(TourMedia.id == media_id)
+        )
+    if not source:
+        return Response(status_code=404)
+    if source.startswith("data:"):
+        header, separator, encoded = source.partition(",")
+        del source
+        mime = header[5:].removesuffix(";base64").lower()
+        allowed = {"image/jpeg", "image/png", "image/webp", "image/gif",
+                   "image/bmp", "image/tiff", "image/avif", "image/heic",
+                   "image/heif", "image/x-icon"}
+        if (not separator or not header.endswith(";base64") or mime not in allowed
+                or len(encoded) > 4 * ((MAX_PHOTO_BYTES + 2) // 3)):
+            return Response(status_code=415)
+        try:
+            content = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error):
+            return Response(status_code=415)
+        if not content or len(content) > MAX_PHOTO_BYTES:
+            return Response(status_code=415)
+        return Response(content, media_type=mime,
+                        headers={"X-Content-Type-Options": "nosniff"})
+    try:
+        parsed = urlsplit(source)
+    except ValueError:
+        return Response(status_code=415)
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        return RedirectResponse(source)
+    return Response(status_code=415)
+
 
 
 CYRILLIC_TO_LATIN = {
@@ -227,14 +284,16 @@ async def upload_to_data_url(
             "Можно загружать только изображения"
         )
 
-    content = await upload.read()
+    if upload.size is not None and upload.size > MAX_PHOTO_BYTES:
+        raise ValueError("Фото должно быть не больше 10 МБ")
+    content = await upload.read(MAX_PHOTO_BYTES + 1)
 
     if not content:
         raise ValueError(
             "Файл пустой"
         )
 
-    max_size = 10 * 1024 * 1024
+    max_size = MAX_PHOTO_BYTES
 
     if len(content) > max_size:
         raise ValueError(
@@ -259,13 +318,13 @@ async def get_categories(
         .options(
             selectinload(
                 TourCategory.media
-            ),
+            ).options(media_preview_option()),
             selectinload(
                 TourCategory.tours
             )
             .selectinload(
                 TourType.media
-            ),
+            ).options(media_preview_option()),
             selectinload(
                 TourCategory.tours
             )
@@ -337,7 +396,7 @@ async def tours_management_page(
 
         about_media_result = (
             await session.execute(
-                select(TourMedia)
+                select(TourMedia).options(media_preview_option())
                 .where(
                     TourMedia.category_id
                     .is_(None),
@@ -396,7 +455,7 @@ async def tour_direction_page(
                 ),
                 selectinload(
                     TourType.media
-                ),
+                ).options(media_preview_option()),
                 selectinload(
                     TourType.departures
                 )
@@ -1570,12 +1629,25 @@ async def prepare_photo_uploads(
             "Выбери хотя бы одно фото"
         )
 
+    if len(photos) > MAX_PHOTO_BATCH_COUNT:
+        raise ValueError("За один раз можно загрузить не больше 5 фото")
+    if sum(photo.size or 0 for photo in photos) > MAX_PHOTO_BATCH_BYTES:
+        raise ValueError("Общий размер фотографий должен быть не больше 20 МБ")
+
+    total_size = 0
     for photo in photos:
         data_url = (
             await upload_to_data_url(
                 photo
             )
         )
+
+        # Account for actual bytes as well, including uploads with unknown size.
+        encoded_length = len(data_url) - data_url.index(",") - 1
+        padding = 2 if data_url.endswith("==") else int(data_url.endswith("="))
+        total_size += encoded_length // 4 * 3 - padding
+        if total_size > MAX_PHOTO_BATCH_BYTES:
+            raise ValueError("Общий размер фотографий должен быть не больше 20 МБ")
 
         prepared.append(
             (
@@ -1917,7 +1989,7 @@ async def reorder_media(
 
     async with SessionLocal() as session:
         result = await session.execute(
-            select(TourMedia)
+            select(TourMedia).options(defer(TourMedia.url))
             .where(
                 TourMedia.id.in_(
                     normalized_ids
@@ -2006,7 +2078,7 @@ async def move_media(
 
     async with SessionLocal() as session:
         result = await session.execute(
-            select(TourMedia)
+            select(TourMedia).options(defer(TourMedia.url))
             .where(
                 TourMedia.id == media_id
             )
@@ -2048,7 +2120,7 @@ async def move_media(
             )
 
         siblings_result = await session.execute(
-            select(TourMedia)
+            select(TourMedia).options(defer(TourMedia.url))
             .where(*scope_conditions)
             .order_by(
                 TourMedia.sort_order,
@@ -2122,7 +2194,7 @@ async def toggle_media(
 ):
     async with SessionLocal() as session:
         result = await session.execute(
-            select(TourMedia)
+            select(TourMedia).options(defer(TourMedia.url))
             .where(
                 TourMedia.id == media_id
             )
@@ -2157,7 +2229,7 @@ async def delete_media(
 ):
     async with SessionLocal() as session:
         result = await session.execute(
-            select(TourMedia)
+            select(TourMedia).options(defer(TourMedia.url))
             .where(
                 TourMedia.id == media_id
             )

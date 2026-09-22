@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/static/crm_media.css">
     <link rel="stylesheet" href="/static/tours_catalog.css">
     <link rel="stylesheet" href="/static/category_media.css?v=1">
-    <script defer src="/static/crm_media.js"></script>
+    <script defer src="/static/crm_media.js?v=photo-memory-1"></script>
 </head>
 <body>
 
@@ -38,7 +38,7 @@
                         {% for media in about_media %}
                         <div class="media-card {% if not media.active %}inactive{% endif %}">
                             {% if media.url %}
-                            <img src="{{ media.url }}" alt="{{ media.title or 'Фото WowderTour' }}" class="media-preview">
+                            <img src="/media/{{ media.id }}/image" loading="lazy" decoding="async" alt="{{ media.title or 'Фото WowderTour' }}" class="media-preview">
                             {% endif %}
 
                             <div class="media-name">{{ media.title or 'Фото' }}</div>
@@ -260,7 +260,7 @@
                     <div class="media-card {% if not media.active %}inactive{% endif %}">
                         {% if media.url %}
                         <img
-                            src="{{ media.url }}"
+                            src="/media/{{ media.id }}/image" loading="lazy" decoding="async"
                             alt="{{ media.title or category.title }}"
                             class="media-preview"
                         >

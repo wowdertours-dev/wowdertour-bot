@@ -41,7 +41,7 @@
             </div>
             <div class="media-dropzone-subtitle">
                 или нажми, чтобы выбрать несколько файлов.
-                Можно загружать несколько фото сразу, до 10 МБ каждое.
+                До 5 фото за раз, до 10 МБ каждое и до 20 МБ суммарно.
             </div>
             <div class="media-dropzone-status"></div>
         `;
@@ -52,29 +52,29 @@
             ".media-dropzone-status"
         );
 
-        function submitFiles() {
-            if (!input.files || input.files.length === 0) {
+        form.addEventListener("submit", (event) => {
+            const files = Array.from(input.files || []);
+            let error = "";
+            if (!files.length) error = "Выбери хотя бы одно фото.";
+            else if (files.some(file => !file.type.startsWith("image/")))
+                error = "Можно загружать только изображения.";
+            else if (files.length > 5) error = "За один раз можно загрузить не больше 5 фото.";
+            else if (files.some(file => file.size > 10 * 1024 * 1024))
+                error = "Фото должно быть не больше 10 МБ.";
+            else if (files.reduce((sum, file) => sum + file.size, 0) > 20 * 1024 * 1024)
+                error = "Общий размер фотографий должен быть не больше 20 МБ.";
+            if (error) {
+                event.preventDefault();
+                status.textContent = error;
+                form.classList.remove("is-uploading");
                 return;
             }
-
-            const invalid = Array.from(input.files).find(
-                (file) => !file.type.startsWith("image/")
-            );
-
-            if (invalid) {
-                status.textContent =
-                    "Можно загружать только изображения.";
-                input.value = "";
-                return;
-            }
-
-            status.textContent =
-                `Загружаем: ${input.files.length} фото…`;
-
+            status.textContent = `Загружаем: ${files.length} фото…`;
             form.classList.add("is-uploading");
+        });
 
-            // Обычная отправка формы надёжнее fetch для больших base64-фото.
-            form.requestSubmit();
+        function submitFiles() {
+            if (input.files && input.files.length) form.requestSubmit();
         }
 
         form.addEventListener("click", (event) => {

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/static/crm_media.css">
     <link rel="stylesheet" href="/static/tour_direction.css">
 
-    <script defer src="/static/crm_media.js"></script>
+    <script defer src="/static/crm_media.js?v=photo-memory-1"></script>
 </head>
 
 <body>
@@ -262,7 +262,7 @@
                                 {% if media.section == "accommodation" %}
                                 <div class="media-card {% if not media.active %}inactive{% endif %}">
                                     {% if media.url %}
-                                    <img src="{{ media.url }}" alt="{{ media.title or tour.title }}" class="media-preview">
+                                    <img src="/media/{{ media.id }}/image" loading="lazy" decoding="async" alt="{{ media.title or tour.title }}" class="media-preview">
                                     {% endif %}
 
                                     <div class="media-name">{{ media.title or 'Фото' }}</div>
@@ -306,7 +306,7 @@
                                 {% if media.section == "activity" %}
                                 <div class="media-card {% if not media.active %}inactive{% endif %}">
                                     {% if media.url %}
-                                    <img src="{{ media.url }}" alt="{{ media.title or tour.title }}" class="media-preview">
+                                    <img src="/media/{{ media.id }}/image" loading="lazy" decoding="async" alt="{{ media.title or tour.title }}" class="media-preview">
                                     {% endif %}
 
                                     <div class="media-name">{{ media.title or 'Фото' }}</div>
