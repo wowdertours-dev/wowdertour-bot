@@ -584,6 +584,14 @@
 
             <section class="booking-card">
                 <h2>Участники</h2>
+                {% if request.query_params.get('participant_removed') == '1' %}
+                <div role="status" style="padding:14px;margin-bottom:18px;background:#eef8f0;border-radius:12px;line-height:1.5;">
+                    Участник удалён. Количество людей и автоматическая стоимость обновлены. Платежи сохранены.
+                    {% if booking.manual_price is not none %}
+                    <strong>Ручная цена {{ format_money(booking.manual_price) }} ₽ сохранена. Проверьте её в блоке «Цена».</strong>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 {% for participant in booking.participants|sort(attribute="id") %}
 
@@ -705,6 +713,29 @@
                     </div>
 
                 </form>
+
+                {% if booking.participants|length > 1 %}
+                <details style="margin:-6px 0 22px;padding:12px 16px;border:1px solid #ead4d4;border-radius:12px;">
+                    <summary style="cursor:pointer;color:#b42318;">Удалить участника из заявки</summary>
+                    <form method="post" action="/bookings/{{ booking.id }}/participants/{{ participant.id }}/delete" style="margin-top:12px;">
+                        <input type="hidden" name="expected_count" value="{{ booking.people_count }}">
+                        <p style="line-height:1.5;">Удалить <strong>{{ participant.full_name }}</strong>? Людей станет {{ booking.people_count - 1 }}. Место в поездке и назначенное место в комнате освободятся. Платежи сохранятся; возврат денег оформляется отдельно.</p>
+                        {% if booking.manual_price is not none %}
+                        <p style="line-height:1.5;"><strong>Ручная цена {{ format_money(booking.manual_price) }} ₽ не изменится.</strong> После удаления при необходимости измените её в блоке «Цена».</p>
+                        {% else %}
+                        <p>Стоимость автоматически пересчитается по оставшимся участникам.</p>
+                        {% endif %}
+                        <label class="form-field">Причина (необязательно)
+                            <input name="reason" maxlength="500" placeholder="Например: отказался от поездки">
+                        </label>
+                        <label style="display:flex;gap:10px;align-items:center;margin:14px 0;">
+                            <input type="checkbox" name="confirm" value="yes" required style="width:18px;height:18px;flex-shrink:0;">
+                            Подтверждаю удаление именно этого участника
+                        </label>
+                        <button type="submit" class="secondary-button" style="color:#b42318;border-color:#d99;">Удалить участника</button>
+                    </form>
+                </details>
+                {% endif %}
 
                 {% else %}
 

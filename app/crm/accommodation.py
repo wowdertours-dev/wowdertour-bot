@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
+from urllib.parse import urlsplit
 from decimal import Decimal, InvalidOperation
 import re
 from uuid import uuid4
 
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -1027,3 +1029,65 @@ async def update_participant_accommodation(
         url=target,
         status_code=303,
     )
+
+@router.post("/bookings/{booking_id}/participants/{participant_id}/delete")
+async def delete_booking_participant(
+    request: Request,
+    booking_id: int,
+    participant_id: int,
+    expected_count: int = Form(...),
+    confirm: str = Form(""),
+    reason: str = Form(""),
+):
+    # CRMAuthMiddleware already protects this router. Reject cross-site forms.
+    source = request.headers.get("origin") or request.headers.get("referer")
+    if source and urlsplit(source).netloc != request.headers.get("host", ""):
+        return HTMLResponse("Недопустимый источник запроса", status_code=403)
+    if confirm != "yes":
+        return HTMLResponse("Подтвердите удаление участника", status_code=400)
+    reason = reason.strip()
+    if len(reason) > 500:
+        return HTMLResponse("Причина удаления — до 500 символов", status_code=400)
+
+    async with SessionLocal() as session:
+        # Serialize deletions from one booking, including double-clicks.
+        booking = await session.scalar(
+            select(Booking).where(Booking.id == booking_id).with_for_update()
+        )
+        if booking is None:
+            return HTMLResponse("Заявка не найдена", status_code=404)
+        participants = list((await session.scalars(
+            select(Participant).where(Participant.booking_id == booking_id)
+            .order_by(Participant.id).with_for_update()
+        )).all())
+        target = next((p for p in participants if p.id == participant_id), None)
+        if target is None:
+            # Repeated POST must never remove another person or reduce the count.
+            return HTMLResponse("Участник уже удалён или не принадлежит этой заявке. Обновите страницу.", status_code=404)
+        if booking.people_count != expected_count or len(participants) != booking.people_count:
+            return HTMLResponse("Состав заявки изменился или количество участников не совпадает. Обновите страницу и проверьте состав.", status_code=409)
+        if len(participants) <= 1:
+            return HTMLResponse("Последнего участника удалить нельзя. Для отказа от поездки отмените заявку, сохранив историю оплат.", status_code=409)
+
+        stamp = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+        entry = (
+            f"[{stamp}] Удалён участник #{target.id}: {target.full_name}. "
+            f"Количество: {booking.people_count} → {booking.people_count - 1}. "
+            f"Комната: {target.room_id or 'не назначена'}. "
+            f"Тариф: {target.accommodation_type or 'базовый'}. "
+            f"Стоимость участника: {target.accommodation_price if target.accommodation_price is not None else 'по цене поездки'}."
+        )
+        if reason:
+            entry += f" Причина: {reason}."
+        if target.comment:
+            entry += f" Комментарий участника: {target.comment}"
+        booking.comment = "\n".join(filter(None, [booking.comment, entry]))
+        booking.people_count -= 1
+        await session.delete(target)
+        await session.flush()
+        # Re-read the collection after DELETE, never calculate from stale ORM data.
+        session.expire(booking, ["participants"])
+        await recalculate_booking(session, booking_id)
+        await session.commit()
+
+    return RedirectResponse(f"/bookings/{booking_id}?participant_removed=1", status_code=303)
